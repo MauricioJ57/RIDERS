@@ -33,6 +33,9 @@ export class Preloader extends Scene
         this.load.setPath('assets');
 
         this.load.image('logo', 'logo.png');
+        this.load.image('piedra', 'bala de jugador.png');
+        this.load.image('bici', 'cuadrado de laberinto.png');
+        this.load.image('camion', 'estrella.png');
     }
 
     create ()
