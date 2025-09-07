@@ -22,6 +22,9 @@ export class Game extends Scene
         this.camion = this.physics.add.image(450, 100, 'camion');
         this.camion.setCollideWorldBounds(true);
         this.camion.setDepth(10);
+        this.camion.setScale(4);
+        this.camion.setBounce(1);
+        this.camion.setVelocityX(100);
         
         //-- CONTROLES
         this.controles = this.input.keyboard.createCursorKeys();
@@ -33,6 +36,17 @@ export class Game extends Scene
             const piedra = this.piedras.create(this.bici.x, this.bici.y - 20, 'piedra');
             piedra.setVelocityY(-300);
         });
+
+        this.camionobjetos = this.physics.add.group();
+
+        this.lanzarpiedra = this.time.addEvent({
+            delay: 1500,
+            callback: () => {
+                const camionobjeto = this.camionobjetos.create(this.camion.x, this.camion.y + 20, 'piedra');
+                camionobjeto.setVelocityY(200);
+            },
+            loop: true
+        })
 
         //--COLISIONES--
 

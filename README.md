@@ -151,3 +151,12 @@ Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, 
 The Phaser logo and characters are &copy; 2011 - 2025 Phaser Studio Inc.
 
 All rights reserved.
+
+(cerca de la entrega final, borrar todo lo de arriba incluido esto, pues cuenta como material de template)
+**PROYECTO RIDERS**
+
+INTEGRANTES DEL GRUPO: MAURICIO JACKI(programador),
+
+INFORMACION DEL PROYECTO: Videojuego desarrollado en phaser, estetica urbana, multijugador cooperativo y versus
+
+QUEDAN 10 SEMANAS PARA LA ENTREGA FINAL
