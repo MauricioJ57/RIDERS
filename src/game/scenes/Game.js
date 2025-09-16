@@ -11,6 +11,16 @@ export class Game extends Scene
     {
         this.cameras.main.setBackgroundColor(0x00ff00);
         //-- IMAGENES ESTATICAS --
+    
+        this.add.rectangle(180, 384, 30, 800, 0x0000ff).setOrigin(0.5, 0.5);
+        
+        this.add.rectangle(820, 384, 30, 800, 0x0000ff).setOrigin(0.5, 0.5);
+
+        this.add.rectangle(350, 384, 10, 800, 0x0000ff).setOrigin(0.5, 0.5);
+
+        this.add.rectangle(500, 384, 10, 800, 0x0000ff).setOrigin(0.5, 0.5);
+
+        this.add.rectangle(650, 384, 10, 800, 0x0000ff).setOrigin(0.5, 0.5);
 
         this.add.image(512, 384, 'background').setAlpha(0.5);
 
@@ -50,6 +60,14 @@ export class Game extends Scene
 
         //--COLISIONES--
 
+        this.physics.add.overlap(this.camionobjetos, this.bici, (camionobjeto, bici) => {
+            bici.disableBody(true, true);
+        }, null, this);
+
+        this.physics.add.overlap(this.camion, this.piedras, (camion, piedras) => {
+            piedras.disableBody(true, true);
+        }, null, this);
+
         this.input.once('pointerdown', () => {
 
             this.scene.start('GameOver');
@@ -66,5 +84,14 @@ export class Game extends Scene
         } else {
             this.bici.setVelocityX(0);
         }
+
+            if (this.camion.x >= 750) {
+                this.camion.setVelocityX(-100);
+                this.camion.setFlipX(true); 
+            }
+            if (this.camion.x <= 250) {
+                this.camion.setVelocityX(100);
+                this.camion.setFlipX(false);
+            }
     }
 }
