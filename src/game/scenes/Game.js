@@ -1,97 +1,125 @@
 import { Scene } from 'phaser';
 
-export class Game extends Scene
-{
-    constructor ()
-    {
-        super('Game');
+// -----------------------------
+// CLASES DE OBSTÁCULOS
+class Obstaculo extends Phaser.Physics.Arcade.Sprite {
+  constructor(scene, x, y, texture) {
+    super(scene, x, y, texture);
+    scene.add.existing(this);
+    scene.physics.add.existing(this);
+    this.setVelocityY(200); // velocidad base de caída
+  }
+}
+
+class Caja extends Obstaculo {
+  constructor(scene, x, y) {
+    super(scene, x, y, 'caja');
+    this.tipo = 'caja';
+  }
+}
+
+class Tomate extends Obstaculo {
+  constructor(scene, x, y) {
+    super(scene, x, y, 'tomate');
+    this.tipo = 'tomate';
+  }
+}
+
+class Banana extends Obstaculo {
+  constructor(scene, x, y) {
+    super(scene, x, y, 'banana');
+    this.tipo = 'banana';
+  }
+}
+
+// -----------------------------
+// ESCENA PRINCIPAL
+export class Game extends Scene {
+  constructor() {
+    super('Game');
+  }
+
+  create() {
+    this.cameras.main.setBackgroundColor(0x00ff00);
+
+    //-- Carriles (x)
+    this.lanes = [200, 350, 500, 650, 800];
+
+    //-- Jugador
+    this.currentLane = 2;
+    this.player = this.physics.add.sprite(this.lanes[this.currentLane], 600, 'bici');
+    this.player.setCollideWorldBounds(true);
+
+    //-- Camión
+    this.camionLane = 2;
+    this.camion = this.physics.add.sprite(this.lanes[this.camionLane], 100, 'camion');
+    this.camion.setScale(4);
+
+    //-- Controles
+    this.cursors = this.input.keyboard.createCursorKeys();
+
+    //-- Grupo de obstáculos
+    this.obstaculos = this.add.group();
+
+    //-- Colisiones
+    this.physics.add.overlap(this.obstaculos, this.player, this.onPlayerHit, null, this);
+
+    //-- IA del camión
+    this.time.addEvent({
+      delay: 1000, // cada segundo decide qué hacer
+      callback: this.camionAI,
+      callbackScope: this,
+      loop: true,
+    });
+  }
+
+  update() {
+    if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
+      this.movePlayer(-1);
     }
-
-    create ()
-    {
-        this.cameras.main.setBackgroundColor(0x00ff00);
-        //-- IMAGENES ESTATICAS --
-    
-        this.add.rectangle(180, 384, 30, 800, 0x0000ff).setOrigin(0.5, 0.5);
-        
-        this.add.rectangle(820, 384, 30, 800, 0x0000ff).setOrigin(0.5, 0.5);
-
-        this.add.rectangle(350, 384, 10, 800, 0x0000ff).setOrigin(0.5, 0.5);
-
-        this.add.rectangle(500, 384, 10, 800, 0x0000ff).setOrigin(0.5, 0.5);
-
-        this.add.rectangle(650, 384, 10, 800, 0x0000ff).setOrigin(0.5, 0.5);
-
-        this.add.image(512, 384, 'background').setAlpha(0.5);
-
-        //-- BICICLETA --
-        this.bici = this.physics.add.sprite(450, 500, 'bici');
-        this.bici.setCollideWorldBounds(true);
-
-        //-- CAMION --
-        this.camion = this.physics.add.image(450, 100, 'camion');
-        this.camion.setCollideWorldBounds(true);
-        this.camion.setDepth(10);
-        this.camion.setScale(4);
-        this.camion.setBounce(1);
-        this.camion.setVelocityX(100);
-        
-        //-- CONTROLES
-        this.controles = this.input.keyboard.createCursorKeys();
-
-        //-- GENERACION DE OBJETOS --
-
-        this.piedras = this.physics.add.group();
-        this.input.keyboard.on('keydown-SPACE', () => {
-            const piedra = this.piedras.create(this.bici.x, this.bici.y - 20, 'piedra');
-            piedra.setVelocityY(-300);
-        });
-
-        this.camionobjetos = this.physics.add.group();
-
-        this.lanzarpiedra = this.time.addEvent({
-            delay: 1500,
-            callback: () => {
-                const camionobjeto = this.camionobjetos.create(this.camion.x, this.camion.y + 20, 'piedra');
-                camionobjeto.setVelocityY(200);
-            },
-            loop: true
-        })
-
-        //--COLISIONES--
-
-        this.physics.add.overlap(this.camionobjetos, this.bici, (camionobjeto, bici) => {
-            bici.disableBody(true, true);
-        }, null, this);
-
-        this.physics.add.overlap(this.camion, this.piedras, (camion, piedras) => {
-            piedras.disableBody(true, true);
-        }, null, this);
-
-        this.input.once('pointerdown', () => {
-
-            this.scene.start('GameOver');
-
-        }); 
+    if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
+      this.movePlayer(1);
     }
+  }
 
-    update () {
-        //-- MOVIMIENTO --
-        if (this.controles.left.isDown) {
-            this.bici.setVelocityX(-300);
-        } else if (this.controles.right.isDown) {
-            this.bici.setVelocityX(300);
-        } else {
-            this.bici.setVelocityX(0);
-        }
-
-            if (this.camion.x >= 750) {
-                this.camion.setVelocityX(-100);
-                this.camion.setFlipX(true); 
-            }
-            if (this.camion.x <= 250) {
-                this.camion.setVelocityX(100);
-                this.camion.setFlipX(false);
-            }
+  // -----------------------------
+  // Movimiento jugador
+  movePlayer(direction) {
+    const newLane = this.currentLane + direction;
+    if (newLane >= 0 && newLane < this.lanes.length) {
+      this.currentLane = newLane;
+      this.player.x = this.lanes[this.currentLane];
     }
+  }
+
+  // -----------------------------
+  // IA del camión
+  camionAI() {
+    const action = Phaser.Math.Between(0, 2); // 0 = mover izq, 1 = mover der, 2 = soltar obstáculo
+
+    if (action === 0) this.moveCamion(-1);
+    else if (action === 1) this.moveCamion(1);
+    else this.soltarObstaculo();
+  }
+
+  moveCamion(direction) {
+    const newLane = this.camionLane + direction;
+    if (newLane >= 0 && newLane < this.lanes.length) {
+      this.camionLane = newLane;
+      this.camion.x = this.lanes[this.camionLane];
+    }
+  }
+
+  soltarObstaculo() {
+    const tipo = Phaser.Math.RND.pick([Caja, Tomate, Banana]); // random
+    const obstaculo = new tipo(this, this.camion.x, this.camion.y + 40);
+    this.obstaculos.add(obstaculo);
+  }
+
+  // -----------------------------
+  // Colisiones
+  onPlayerHit(obstaculo, player) {
+    console.log(`El jugador fue golpeado por un ${obstaculo.tipo}`);
+    obstaculo.destroy(); // el obstáculo desaparece, pero el jugador sigue
+  }
 }
