@@ -1,6 +1,32 @@
 import { Scene } from 'phaser';
 
 // -----------------------------
+// CLASE STATE MACHINE
+class StateMachine {
+  constructor(initial, possibleStates, context) {
+    this.initial = initial;
+    this.possibleStates = possibleStates;
+    this.context = context;
+    this.state = null;
+  }
+
+  step() {
+    if (!this.state) {
+      this.state = this.initial;
+      this.possibleStates[this.state].enter?.call(this.context);
+    }
+    this.possibleStates[this.state].execute?.call(this.context);
+  }
+
+  transition(newState) {
+    if (this.state === newState) return;
+    this.possibleStates[this.state].exit?.call(this.context);
+    this.state = newState;
+    this.possibleStates[this.state].enter?.call(this.context);
+  }
+}
+
+// -----------------------------
 // CLASES DE OBSTÁCULOS
 class Obstaculo extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture) {
@@ -23,7 +49,7 @@ class Tomate extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'tomates');
     this.tipo = 'tomates';
-    this.setDisplaySize(128, 32); // ocupa más ancho
+    this.setDisplaySize(128, 32); 
     this.setScale(2.5);
   }
 }
@@ -50,35 +76,34 @@ export class Game extends Scene {
     const gameWidth = 1024;
     const gameHeight = 768;
 
-// --- Márgenes y carriles ---
-const marginX = 200; // veredas más grandes
-const laneCount = 5;
-const laneWidth = (gameWidth - marginX * 2) / laneCount;
+    // --- Márgenes y carriles ---
+    const marginX = 200;
+    const laneCount = 5;
+    const laneWidth = (gameWidth - marginX * 2) / laneCount;
 
-// calcular centros de carriles
-this.lanes = [];
-for (let i = 0; i < laneCount; i++) {
-  this.lanes.push(marginX + laneWidth / 2 + i * laneWidth);
-}
+    this.lanes = [];
+    for (let i = 0; i < laneCount; i++) {
+      this.lanes.push(marginX + laneWidth / 2 + i * laneWidth);
+    }
 
-// --- Dibujar líneas divisorias ---
-for (let i = 1; i < laneCount; i++) {
-  const lineX = marginX + i * laneWidth;
-  this.add.rectangle(lineX, gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
-}
+    // Dibujar líneas divisorias
+    for (let i = 1; i < laneCount; i++) {
+      const lineX = marginX + i * laneWidth;
+      this.add.rectangle(lineX, gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
+    }
 
-// --- Rectángulo de la calle (opcional, sin colisión) ---
-this.add.rectangle(
-  gameWidth / 2,
-  gameHeight / 2,
-  gameWidth - marginX * 2,
-  gameHeight,
-  0x444444,
-  0.3 // alpha, transparente
-).setDepth(-1);
+    // Fondo de la calle
+    this.add.rectangle(
+      gameWidth / 2,
+      gameHeight / 2,
+      gameWidth - marginX * 2,
+      gameHeight,
+      0x444444,
+      0.3
+    ).setDepth(-1);
 
     // --- Jugador ---
-    this.currentLane = 2; // empieza en el del medio
+    this.currentLane = 2;
     this.player = this.physics.add.sprite(this.lanes[this.currentLane], 600, 'bici');
     this.player.setCollideWorldBounds(true);
 
@@ -96,15 +121,73 @@ this.add.rectangle(
     // --- Colisiones ---
     this.physics.add.overlap(this.obstaculos, this.player, this.onPlayerHit, null, this);
 
-    // --- IA del camión ---
-    this.time.addEvent({
-      delay: 1000, // cada segundo decide qué hacer
-      callback: this.camionAI,
-      callbackScope: this,
-      loop: true,
-    });
-  }
+// --- State Machine del Camión ---
+this.camionFSM = new StateMachine('idle', {
+  idle: {
+    enter: () => { this.camionTimer = 0; },
+    execute: () => {
+      this.camionTimer++;
+      if (this.camionTimer > 60) { // 1 seg aprox a 60fps
+        const choice = Phaser.Math.Between(0, 2);
+        if (choice === 0) this.camionFSM.transition('move');
+        else if (choice === 1) this.camionFSM.transition('drop');
+        else this.camionFSM.transition('pattern');
+      }
+    },
+    exit: () => {}
+  },
 
+  move: {
+    enter: () => {
+      const dir = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
+      this.moveCamion(dir);
+      this.camionFSM.transition('idle');
+    },
+    execute: () => {},
+    exit: () => {}
+  },
+
+  drop: {
+    enter: () => {
+      this.soltarObstaculo();
+      this.camionFSM.transition('idle');
+    },
+    execute: () => {},
+    exit: () => {}
+  },
+
+  pattern: {
+    enter: () => {
+      // Ejemplo de patrón: carril 0 → caja, carril 1 → caja, carril 3 → tomate
+      this.patron = [
+        { lane: 0, tipo: Caja },
+        { lane: 1, tipo: Caja },
+        { lane: 3, tipo: Tomate }
+      ];
+      this.patronIndex = 0;
+    },
+    execute: () => {
+      if (this.patronIndex < this.patron.length) {
+        const paso = this.patron[this.patronIndex];
+
+        // Si no está en el carril correcto → moverse
+        if (this.camionLane !== paso.lane) {
+          if (this.camionLane < paso.lane) this.moveCamion(1);
+          else this.moveCamion(-1);
+        } else {
+          // Ya está en el carril correcto → soltar obstáculo
+          const obstaculo = new paso.tipo(this, this.camion.x, this.camion.y + 40);
+          this.obstaculos.add(obstaculo);
+          this.patronIndex++;
+        }
+      } else {
+        this.camionFSM.transition('idle');
+      }
+    },
+    exit: () => { this.patron = null; }
+  }
+}, this);
+  }
   update() {
     if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
       this.movePlayer(-1);
@@ -112,26 +195,18 @@ this.add.rectangle(
     if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
       this.movePlayer(1);
     }
+
+    // Actualizar FSM del camión
+    this.camionFSM.step();
   }
 
   // -----------------------------
-  // Movimiento jugador
   movePlayer(direction) {
     const newLane = this.currentLane + direction;
     if (newLane >= 0 && newLane < this.lanes.length) {
       this.currentLane = newLane;
       this.player.x = this.lanes[this.currentLane];
     }
-  }
-
-  // -----------------------------
-  // IA del camión
-  camionAI() {
-    const action = Phaser.Math.Between(0, 2); // 0 = mover izq, 1 = mover der, 2 = soltar obstáculo
-
-    if (action === 0) this.moveCamion(-1);
-    else if (action === 1) this.moveCamion(1);
-    else this.soltarObstaculo();
   }
 
   moveCamion(direction) {
@@ -142,34 +217,21 @@ this.add.rectangle(
     }
   }
 
-soltarObstaculo() {
-  let tipo = Phaser.Math.RND.pick([Caja, Tomate, Banana]);
+  soltarObstaculo() {
+    let tipo = Phaser.Math.RND.pick([Caja, Tomate, Banana]);
+    let x = this.camion.x;
 
-  if (tipo === Tomate) {
-    // casos borde
-    if (this.camionLane === 0) {
-      // primer carril → arrancar desde carril 1
-      var x = this.lanes[1]; 
-    } else if (this.camionLane === this.lanes.length - 1) {
-      // último carril → centrar en carril 3
-      var x = this.lanes[this.lanes.length - 2]; 
-    } else {
-      // cualquier otro carril → normal
-      var x = this.camion.x;
+    if (tipo === Tomate) {
+      if (this.camionLane === 0) x = this.lanes[1];
+      else if (this.camionLane === this.lanes.length - 1) x = this.lanes[this.lanes.length - 2];
     }
-    var obstaculo = new Tomate(this, x, this.camion.y + 40);
-  } else {
-    // resto de obstáculos
-    var obstaculo = new tipo(this, this.camion.x, this.camion.y + 40);
+
+    const obstaculo = new tipo(this, x, this.camion.y + 40);
+    this.obstaculos.add(obstaculo);
   }
 
-  this.obstaculos.add(obstaculo);
-}
-
-  // -----------------------------
-  // Colisiones
   onPlayerHit(obstaculo, player) {
     console.log(`El jugador fue golpeado por un ${obstaculo.tipo}`);
-    obstaculo.destroy(); // el obstáculo desaparece, pero el jugador sigue
+    obstaculo.destroy();
   }
 }
