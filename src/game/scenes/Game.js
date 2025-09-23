@@ -36,6 +36,13 @@ class Banana extends Obstaculo {
   }
 }
 
+class Piedra extends Obstaculo {
+  constructor(scene, x, y) {
+    super(scene, x, y, 'piedra');
+    this.tipo = 'piedra';
+  }
+}
+
 // -----------------------------
 // ESCENA PRINCIPAL
 export class Game extends Scene {
@@ -81,6 +88,18 @@ this.add.rectangle(
     this.currentLane = 2; // empieza en el del medio
     this.player = this.physics.add.sprite(this.lanes[this.currentLane], 600, 'bici');
     this.player.setCollideWorldBounds(true);
+    
+    // --- Estado de la piedra ---
+    this.hasPiedra = false;
+
+    // --- Disparo ---
+    this.input.keyboard.on('keydown-SPACE',() => {  
+      if (this.hasPiedra) {
+        const piedra = this.physics.add.sprite(this.player.x, this.player.y - 50, 'piedra');
+        piedra.setVelocityY(-300);
+        this.hasPiedra = false;
+      }
+    });
 
     // --- Camión ---
     this.camionLane = 2;
@@ -143,7 +162,7 @@ this.add.rectangle(
   }
 
 soltarObstaculo() {
-  let tipo = Phaser.Math.RND.pick([Caja, Tomate, Banana]);
+  let tipo = Phaser.Math.RND.pick([Caja, Tomate, Banana, Piedra]);
 
   if (tipo === Tomate) {
     // casos borde
@@ -169,7 +188,14 @@ soltarObstaculo() {
   // -----------------------------
   // Colisiones
   onPlayerHit(obstaculo, player) {
-    console.log(`El jugador fue golpeado por un ${obstaculo.tipo}`);
-    obstaculo.destroy(); // el obstáculo desaparece, pero el jugador sigue
+    if (obstaculo.tipo === 'piedra') {
+      // recoger piedra
+      this.hasPiedra = true;
+      console.log('se ha recogido una piedra.');
+    } else {
+      // chocar con otro obstáculo
+      console.log(`¡Has chocado con una ${obstaculo.tipo}!`);
+    }
+    obstaculo.destroy();
   }
 }
