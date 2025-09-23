@@ -15,16 +15,13 @@ class Caja extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'caja');
     this.tipo = 'caja';
-    this.setScale(2);
   }
 }
 
 class Tomate extends Obstaculo {
   constructor(scene, x, y) {
-    super(scene, x, y, 'tomates');
-    this.tipo = 'tomates';
-    this.setDisplaySize(128, 32); // ocupa más ancho
-    this.setScale(2.5);
+    super(scene, x, y, 'tomate');
+    this.tipo = 'tomate';
   }
 }
 
@@ -32,7 +29,6 @@ class Banana extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'banana');
     this.tipo = 'banana';
-    this.setScale(2);
   }
 }
 
@@ -46,57 +42,29 @@ export class Game extends Scene {
   create() {
     this.cameras.main.setBackgroundColor(0x00ff00);
 
-    // --- Resolución ---
-    const gameWidth = 1024;
-    const gameHeight = 768;
+    //-- Carriles (x)
+    this.lanes = [200, 350, 500, 650, 800];
 
-// --- Márgenes y carriles ---
-const marginX = 200; // veredas más grandes
-const laneCount = 5;
-const laneWidth = (gameWidth - marginX * 2) / laneCount;
-
-// calcular centros de carriles
-this.lanes = [];
-for (let i = 0; i < laneCount; i++) {
-  this.lanes.push(marginX + laneWidth / 2 + i * laneWidth);
-}
-
-// --- Dibujar líneas divisorias ---
-for (let i = 1; i < laneCount; i++) {
-  const lineX = marginX + i * laneWidth;
-  this.add.rectangle(lineX, gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
-}
-
-// --- Rectángulo de la calle (opcional, sin colisión) ---
-this.add.rectangle(
-  gameWidth / 2,
-  gameHeight / 2,
-  gameWidth - marginX * 2,
-  gameHeight,
-  0x444444,
-  0.3 // alpha, transparente
-).setDepth(-1);
-
-    // --- Jugador ---
-    this.currentLane = 2; // empieza en el del medio
+    //-- Jugador
+    this.currentLane = 2;
     this.player = this.physics.add.sprite(this.lanes[this.currentLane], 600, 'bici');
     this.player.setCollideWorldBounds(true);
 
-    // --- Camión ---
+    //-- Camión
     this.camionLane = 2;
     this.camion = this.physics.add.sprite(this.lanes[this.camionLane], 100, 'camion');
     this.camion.setScale(4);
 
-    // --- Controles ---
+    //-- Controles
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    // --- Grupo de obstáculos ---
+    //-- Grupo de obstáculos
     this.obstaculos = this.add.group();
 
-    // --- Colisiones ---
+    //-- Colisiones
     this.physics.add.overlap(this.obstaculos, this.player, this.onPlayerHit, null, this);
 
-    // --- IA del camión ---
+    //-- IA del camión
     this.time.addEvent({
       delay: 1000, // cada segundo decide qué hacer
       callback: this.camionAI,
@@ -142,29 +110,11 @@ this.add.rectangle(
     }
   }
 
-soltarObstaculo() {
-  let tipo = Phaser.Math.RND.pick([Caja, Tomate, Banana]);
-
-  if (tipo === Tomate) {
-    // casos borde
-    if (this.camionLane === 0) {
-      // primer carril → arrancar desde carril 1
-      var x = this.lanes[1]; 
-    } else if (this.camionLane === this.lanes.length - 1) {
-      // último carril → centrar en carril 3
-      var x = this.lanes[this.lanes.length - 2]; 
-    } else {
-      // cualquier otro carril → normal
-      var x = this.camion.x;
-    }
-    var obstaculo = new Tomate(this, x, this.camion.y + 40);
-  } else {
-    // resto de obstáculos
-    var obstaculo = new tipo(this, this.camion.x, this.camion.y + 40);
+  soltarObstaculo() {
+    const tipo = Phaser.Math.RND.pick([Caja, Tomate, Banana]); // random
+    const obstaculo = new tipo(this, this.camion.x, this.camion.y + 40);
+    this.obstaculos.add(obstaculo);
   }
-
-  this.obstaculos.add(obstaculo);
-}
 
   // -----------------------------
   // Colisiones

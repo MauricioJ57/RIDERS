@@ -30,16 +30,12 @@ export class Preloader extends Scene
     preload ()
     {
         //  Load the assets for the game - Replace with your own assets
-        this.load.setPath('public/assets');
+        this.load.setPath('assets');
 
         this.load.image('logo', 'logo.png');
         this.load.image('piedra', 'bala de jugador.png');
         this.load.image('bici', 'cuadrado de laberinto.png');
         this.load.image('camion', 'estrella.png');
-        this.load.image('caja', 'caja_ph.png');
-        this.load.image('banana', 'banana_ph.png');
-        this.load.image('tomates', 'tomates_ph.png');
-
     }
 
     create ()
