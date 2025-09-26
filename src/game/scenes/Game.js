@@ -33,7 +33,18 @@ class Obstaculo extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, texture);
     scene.add.existing(this);
     scene.physics.add.existing(this);
-    this.setVelocityY(200); // velocidad base de caída
+    this.setVelocityY(200);
+  }
+
+  // reset cuando se reutiliza desde el pool
+  reset(x, y) {
+    this.enableBody(true, x, y, true, true);
+    this.setVelocityY(200);
+  }
+
+  // cuando desaparece (colisión o fuera de pantalla)
+  deactivate() {
+    this.disableBody(true, true);
   }
 }
 
@@ -49,7 +60,7 @@ class Tomate extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'tomates');
     this.tipo = 'tomates';
-    this.setDisplaySize(128, 32); 
+    this.setDisplaySize(128, 32);
     this.setScale(2.5);
   }
 }
@@ -72,11 +83,9 @@ export class Game extends Scene {
   create() {
     this.cameras.main.setBackgroundColor(0x00ff00);
 
-    // --- Resolución ---
     const gameWidth = 1024;
     const gameHeight = 768;
 
-    // --- Márgenes y carriles ---
     const marginX = 200;
     const laneCount = 5;
     const laneWidth = (gameWidth - marginX * 2) / laneCount;
@@ -86,13 +95,13 @@ export class Game extends Scene {
       this.lanes.push(marginX + laneWidth / 2 + i * laneWidth);
     }
 
-    // Dibujar líneas divisorias
+    // líneas divisorias
     for (let i = 1; i < laneCount; i++) {
       const lineX = marginX + i * laneWidth;
       this.add.rectangle(lineX, gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
     }
 
-    // Fondo de la calle
+    // fondo de la calle
     this.add.rectangle(
       gameWidth / 2,
       gameHeight / 2,
@@ -102,92 +111,103 @@ export class Game extends Scene {
       0.3
     ).setDepth(-1);
 
-    // --- Jugador ---
+    // jugador
     this.currentLane = 2;
     this.player = this.physics.add.sprite(this.lanes[this.currentLane], 600, 'bici');
     this.player.setCollideWorldBounds(true);
 
-    // --- Camión ---
+    // camión
     this.camionLane = 2;
     this.camion = this.physics.add.sprite(this.lanes[this.camionLane], 100, 'camion');
     this.camion.setScale(4);
 
-    // --- Controles ---
+    // controles
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    // --- Grupo de obstáculos ---
-    this.obstaculos = this.add.group();
+    // -----------------------------
+    // POOLS DE OBSTÁCULOS
+    this.poolCajas = this.physics.add.group({
+      classType: Caja,
+      maxSize: 20,
+      runChildUpdate: false
+    });
 
-    // --- Colisiones ---
-    this.physics.add.overlap(this.obstaculos, this.player, this.onPlayerHit, null, this);
+    this.poolTomates = this.physics.add.group({
+      classType: Tomate,
+      maxSize: 10,
+      runChildUpdate: false
+    });
 
-// --- State Machine del Camión ---
-this.camionFSM = new StateMachine('idle', {
-  idle: {
-    enter: () => { this.camionTimer = 0; },
-    execute: () => {
-      this.camionTimer++;
-      if (this.camionTimer > 60) { // 1 seg aprox a 60fps
-        const choice = Phaser.Math.Between(0, 2);
-        if (choice === 0) this.camionFSM.transition('move');
-        else if (choice === 1) this.camionFSM.transition('drop');
-        else this.camionFSM.transition('pattern');
-      }
-    },
-    exit: () => {}
-  },
+    this.poolBananas = this.physics.add.group({
+      classType: Banana,
+      maxSize: 20,
+      runChildUpdate: false
+    });
 
-  move: {
-    enter: () => {
-      const dir = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
-      this.moveCamion(dir);
-      this.camionFSM.transition('idle');
-    },
-    execute: () => {},
-    exit: () => {}
-  },
+    // colisiones
+    this.physics.add.overlap(this.poolCajas, this.player, this.onPlayerHit, null, this);
+    this.physics.add.overlap(this.poolTomates, this.player, this.onPlayerHit, null, this);
+    this.physics.add.overlap(this.poolBananas, this.player, this.onPlayerHit, null, this);
 
-  drop: {
-    enter: () => {
-      this.soltarObstaculo();
-      this.camionFSM.transition('idle');
-    },
-    execute: () => {},
-    exit: () => {}
-  },
+    // FSM del camión
+    this.camionFSM = new StateMachine('idle', {
+      idle: {
+        enter: () => { this.camionTimer = 0; },
+        execute: () => {
+          this.camionTimer++;
+          if (this.camionTimer > 60) {
+            const choice = Phaser.Math.Between(0, 2);
+            if (choice === 0) this.camionFSM.transition('move');
+            else if (choice === 1) this.camionFSM.transition('drop');
+            else this.camionFSM.transition('pattern');
+          }
+        },
+        exit: () => {}
+      },
 
-  pattern: {
-    enter: () => {
-      // Ejemplo de patrón: carril 0 → caja, carril 1 → caja, carril 3 → tomate
-      this.patron = [
-        { lane: 0, tipo: Caja },
-        { lane: 1, tipo: Caja },
-        { lane: 3, tipo: Tomate }
-      ];
-      this.patronIndex = 0;
-    },
-    execute: () => {
-      if (this.patronIndex < this.patron.length) {
-        const paso = this.patron[this.patronIndex];
-
-        // Si no está en el carril correcto → moverse
-        if (this.camionLane !== paso.lane) {
-          if (this.camionLane < paso.lane) this.moveCamion(1);
-          else this.moveCamion(-1);
-        } else {
-          // Ya está en el carril correcto → soltar obstáculo
-          const obstaculo = new paso.tipo(this, this.camion.x, this.camion.y + 40);
-          this.obstaculos.add(obstaculo);
-          this.patronIndex++;
+      move: {
+        enter: () => {
+          const dir = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
+          this.moveCamion(dir);
+          this.camionFSM.transition('idle');
         }
-      } else {
-        this.camionFSM.transition('idle');
+      },
+
+      drop: {
+        enter: () => {
+          this.soltarObstaculo();
+          this.camionFSM.transition('idle');
+        }
+      },
+
+      pattern: {
+        enter: () => {
+          this.patron = [
+            { lane: 0, tipo: Caja },
+            { lane: 1, tipo: Caja },
+            { lane: 3, tipo: Tomate }
+          ];
+          this.patronIndex = 0;
+        },
+        execute: () => {
+          if (this.patronIndex < this.patron.length) {
+            const paso = this.patron[this.patronIndex];
+            if (this.camionLane !== paso.lane) {
+              if (this.camionLane < paso.lane) this.moveCamion(1);
+              else this.moveCamion(-1);
+            } else {
+              this.spawnObstaculo(paso.tipo, this.camion.x, this.camion.y + 40);
+              this.patronIndex++;
+            }
+          } else {
+            this.camionFSM.transition('idle');
+          }
+        },
+        exit: () => { this.patron = null; }
       }
-    },
-    exit: () => { this.patron = null; }
+    }, this);
   }
-}, this);
-  }
+
   update() {
     if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
       this.movePlayer(-1);
@@ -196,7 +216,6 @@ this.camionFSM = new StateMachine('idle', {
       this.movePlayer(1);
     }
 
-    // Actualizar FSM del camión
     this.camionFSM.step();
   }
 
@@ -217,8 +236,19 @@ this.camionFSM = new StateMachine('idle', {
     }
   }
 
+  // Spawner centralizado
+  spawnObstaculo(Tipo, x, y) {
+    let pool;
+    if (Tipo === Caja) pool = this.poolCajas;
+    else if (Tipo === Tomate) pool = this.poolTomates;
+    else if (Tipo === Banana) pool = this.poolBananas;
+
+    const obstaculo = pool.get(x, y);
+    if (obstaculo) obstaculo.reset(x, y);
+  }
+
   soltarObstaculo() {
-    let tipo = Phaser.Math.RND.pick([Caja, Tomate, Banana]);
+    const tipo = Phaser.Math.RND.pick([Caja, Tomate, Banana]);
     let x = this.camion.x;
 
     if (tipo === Tomate) {
@@ -226,12 +256,12 @@ this.camionFSM = new StateMachine('idle', {
       else if (this.camionLane === this.lanes.length - 1) x = this.lanes[this.lanes.length - 2];
     }
 
-    const obstaculo = new tipo(this, x, this.camion.y + 40);
-    this.obstaculos.add(obstaculo);
+    this.spawnObstaculo(tipo, x, this.camion.y + 40);
   }
 
-  onPlayerHit(obstaculo, player) {
+  // -----------------------------
+  onPlayerHit(player, obstaculo) {
     console.log(`El jugador fue golpeado por un ${obstaculo.tipo}`);
-    obstaculo.destroy();
+    obstaculo.deactivate(); // vuelve al pool
   }
 }
