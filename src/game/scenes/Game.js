@@ -89,6 +89,11 @@ this.add.rectangle(
     // --- Jugador ---
     this.currentLane = 2; // empieza en el del medio
     this.player = new Bici(this, this.lanes[this.currentLane], 600, 'bici');
+    this.player.setScale(4);
+
+    // --- Mira ---
+    this.mira = this.add.sprite(this.player.x, this.player.y - 500, 'mira');
+    this.mira.setDepth(1); // encima de todo
     
     // --- Estado de la piedra ---
     this.hasPiedra = false;
@@ -102,10 +107,26 @@ this.add.rectangle(
       }
     });
 
+    // --- Controles de la mira ---
+    this.input.on('pointermove', (pointer) => {
+      // mover mira horizontalmente con el ratón
+      this.mira.x = Phaser.Math.Clamp(pointer.x, marginX, gameWidth - marginX);
+      // alinear jugador con la mira
+      let closestLane = 0;
+      let minDist = Math.abs(this.lanes[0] - this.mira.x);
+      for (let i = 1; i < this.lanes.length; i++) {
+        const dist = Math.abs(this.lanes[i] - this.mira.x);
+        if (dist < minDist) {
+          minDist = dist;
+          closestLane = i;
+        }
+      }
+    });
+
     // --- Camión ---
     this.camionLane = 2;
     this.camion = this.physics.add.sprite(this.lanes[this.camionLane], 100, 'camion');
-    this.camion.setScale(4);
+    this.camion.setScale(6);
 
     // --- Controles ---
     this.cursors = this.input.keyboard.createCursorKeys();
