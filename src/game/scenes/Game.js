@@ -91,9 +91,10 @@ this.add.rectangle(
     this.player = new Bici(this, this.lanes[this.currentLane], 600, 'bici');
     this.player.setScale(4);
 
-    // --- Mira ---
-    this.mira = this.add.sprite(this.player.x, this.player.y - 500, 'mira');
-    this.mira.setDepth(1); // encima de todo
+  // --- Mira ---
+  this.mira = this.add.sprite(this.player.x, this.player.y - 500, 'mira');
+  this.mira.setDepth(1); // encima de todo
+  this.mira.setVisible(false); // Oculta la mira al inicio
     
     // --- Estado de la piedra ---
     this.hasPiedra = false;
@@ -104,6 +105,7 @@ this.add.rectangle(
         const piedra = this.physics.add.sprite(this.player.x, this.player.y - 50, 'piedra');
         piedra.setVelocityY(-300);
         this.hasPiedra = false;
+        this.mira.setVisible(false); // Oculta la mira al disparar
       }
     });
 
@@ -200,6 +202,7 @@ soltarObstaculo() {
     if (obstaculo.tipo === 'piedra') {
       // recoger piedra
       this.hasPiedra = true;
+      this.mira.setVisible(true); // Activa la mira al recoger piedra
       console.log('se ha recogido una piedra.');
     } else {
       // chocar con otro obstáculo
