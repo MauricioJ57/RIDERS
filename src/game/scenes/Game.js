@@ -1,3 +1,5 @@
+import Bici from "../clases/bici.js";
+import Camion from "../clases/camion.js";
 import { Scene } from 'phaser';
 
 // -----------------------------
@@ -86,8 +88,7 @@ this.add.rectangle(
 
     // --- Jugador ---
     this.currentLane = 2; // empieza en el del medio
-    this.player = this.physics.add.sprite(this.lanes[this.currentLane], 600, 'bici');
-    this.player.setCollideWorldBounds(true);
+    this.player = new Bici(this, this.lanes[this.currentLane], 600, 'bici');
     
     // --- Estado de la piedra ---
     this.hasPiedra = false;
@@ -125,22 +126,9 @@ this.add.rectangle(
   }
 
   update() {
-    if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
-      this.movePlayer(-1);
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
-      this.movePlayer(1);
-    }
-  }
-
-  // -----------------------------
-  // Movimiento jugador
-  movePlayer(direction) {
-    const newLane = this.currentLane + direction;
-    if (newLane >= 0 && newLane < this.lanes.length) {
-      this.currentLane = newLane;
-      this.player.x = this.lanes[this.currentLane];
-    }
+    // --- Movimiento del jugador ---
+    this.player.mover(this.cursors);
+    // --- IA del camión ---
   }
 
   // -----------------------------
