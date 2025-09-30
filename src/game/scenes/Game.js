@@ -77,6 +77,16 @@ class Banana extends Obstaculo {
 }
 
 // -----------------------------
+// POWER-UP: GOMERA
+class PickupGomera extends Obstaculo {
+  constructor(scene, x, y) {
+    super(scene, x, y, 'gomera');
+    this.tipo = 'gomera';
+    this.setScale(2);
+  }
+}
+
+// -----------------------------
 // CLASE PLAYER BIKE
 class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, lanes) {
@@ -92,12 +102,25 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     this.setScale(3);
     this.setCollideWorldBounds(true);
 
+    // GOMERA
     this.hasGomera = false;
 
     // INPUT
     this.cursors = scene.input.keyboard.createCursorKeys();
     this.jumpKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.shootKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+    this.aimKeys = scene.input.keyboard.addKeys({
+      up: Phaser.Input.Keyboard.KeyCodes.W,
+      down: Phaser.Input.Keyboard.KeyCodes.S,
+      left: Phaser.Input.Keyboard.KeyCodes.A,
+      right: Phaser.Input.Keyboard.KeyCodes.D,
+      fire: Phaser.Input.Keyboard.KeyCodes.F
+    });
+
+    // MIRA (oculta al inicio)
+    this.mira = scene.add.sprite(this.x, this.y - 200, 'mira');
+    this.mira.setDepth(1);
+    this.mira.setVisible(false);
 
     // STATE MACHINE
     this.FSM = new StateMachine('normal', {
@@ -124,22 +147,29 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     this.FSM.step();
 
     // movimiento por lanes
-    if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
-      this.move(-1);
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
-      this.move(1);
-    }
+    if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) this.move(-1);
+    if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) this.move(1);
 
     // salto
     if (Phaser.Input.Keyboard.JustDown(this.jumpKey) && this.FSM.state === 'normal') {
-      this.FSM.transition('jumping', { duration: 1000 }); // 1 segundo
+      this.FSM.transition('jumping', { duration: 1000 });
       console.log("¡Saltó!");
     }
 
-    // disparo
-    if (Phaser.Input.Keyboard.JustDown(this.shootKey) && this.hasGomera && this.FSM.state === 'normal') {
+    // disparo normal (si tenés otra mecánica con SHIFT)
+    if (Phaser.Input.Keyboard.JustDown(this.shootKey) && this.hasGomera === false) {
       this.shoot();
+    }
+
+    // --------------------------
+    // CONTROL DE LA GOMERA + MIRA
+    // --------------------------
+    if (this.hasGomera) {
+      this.handleMiraMovement();
+
+      if (Phaser.Input.Keyboard.JustDown(this.aimKeys.fire)) {
+        this.fireGomera();
+      }
     }
   }
 
@@ -152,8 +182,46 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   }
 
   shoot() {
-    console.log("Disparó la gomera!");
-    // integrar pool de proyectiles más adelante
+    console.log("Disparó la gomera (placeholder proyectil)!");
+  }
+
+  // --- Movimiento de la mira con WASD ---
+  handleMiraMovement() {
+    const speed = 5;
+    if (this.aimKeys.left.isDown) this.mira.x -= speed;
+    if (this.aimKeys.right.isDown) this.mira.x += speed;
+    if (this.aimKeys.up.isDown) this.mira.y -= speed;
+    if (this.aimKeys.down.isDown) this.mira.y += speed;
+
+    // límites dentro de la pantalla
+    const { width, height } = this.scene.sys.game.config;
+    this.mira.x = Phaser.Math.Clamp(this.mira.x, 0, width);
+    this.mira.y = Phaser.Math.Clamp(this.mira.y, 0, height);
+  }
+
+  // --- Disparo de la gomera ---
+  fireGomera() {
+    const camion = this.scene.camion;
+
+    // chequeo simple: ¿está la mira dentro del área del camión?
+    const bounds = camion.getBounds();
+    if (Phaser.Geom.Rectangle.Contains(bounds, this.mira.x, this.mira.y)) {
+      console.log("¡Le pegó al camión!");
+    } else {
+      console.log("Falló el disparo...");
+    }
+
+    // reset estado
+    this.hasGomera = false;
+    this.mira.setVisible(false);
+  }
+
+  // --- Cuando agarra el power-up de gomera ---
+  giveGomera() {
+    this.hasGomera = true;
+    this.mira.setVisible(true);
+    this.mira.x = this.x;       // aparece cerca del jugador
+    this.mira.y = this.y - 200; // un poco arriba
   }
 
   handleCollision(obstaculo) {
@@ -228,6 +296,19 @@ export class Game extends Scene {
       maxSize: 20,
       runChildUpdate: true
     });
+
+    // --- GOMERAS ---
+    this.poolGomeras = this.physics.add.group({
+      classType: PickupGomera,
+      maxSize: 5,
+      runChildUpdate: true
+    });
+    this.physics.add.overlap(this.player, this.poolGomeras, (player, gomera) => {
+      gomera.deactivate();
+      this.player.giveGomera();
+      console.log("¡Agarró la gomera!");
+    });
+    this.scheduleNextGomera();
 
     // COLISIONES
     this.physics.add.overlap(this.player, this.poolCajas, (player, obstaculo) => {
@@ -321,9 +402,10 @@ export class Game extends Scene {
     if (Tipo === Caja) pool = this.poolCajas;
     else if (Tipo === Tomate) pool = this.poolTomates;
     else if (Tipo === Banana) pool = this.poolBananas;
+    else if (Tipo === PickupGomera) pool = this.poolGomeras;
 
-    const obstaculo = pool.get(x, y);
-    if (obstaculo) obstaculo.reset(x, y);
+    const obj = pool.get(x, y);
+    if (obj) obj.reset(x, y);
   }
 
   soltarObstaculo() {
@@ -334,5 +416,15 @@ export class Game extends Scene {
       else if (this.camionLane === this.lanes.length - 1) x = this.lanes[this.lanes.length - 2];
     }
     this.spawnObstaculo(tipo, x, this.camion.y + 40);
+  }
+
+  // --- Spawner de gomeras por tiempo ---
+  scheduleNextGomera() {
+    const delay = Phaser.Math.Between(10000, 20000); // 10–20s
+    this.time.delayedCall(delay, () => {
+      const lane = Phaser.Math.Between(0, this.lanes.length - 1);
+      this.spawnObstaculo(PickupGomera, this.lanes[lane], 0);
+      this.scheduleNextGomera(); // programar el próximo
+    });
   }
 }
