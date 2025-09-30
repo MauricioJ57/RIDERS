@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import InputSystem, { INPUT_ACTIONS } from '../systems/InputSystem.js';
 
 // -----------------------------
 // CLASE STATE MACHINE GENÉRICA
@@ -105,18 +106,6 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     // GOMERA
     this.hasGomera = false;
 
-    // INPUT
-    this.cursors = scene.input.keyboard.createCursorKeys();
-    this.jumpKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.shootKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
-    this.aimKeys = scene.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      down: Phaser.Input.Keyboard.KeyCodes.S,
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
-      fire: Phaser.Input.Keyboard.KeyCodes.F
-    });
-
     // MIRA (oculta al inicio)
     this.mira = scene.add.sprite(this.x, this.y - 200, 'mira');
     this.mira.setDepth(1);
@@ -146,20 +135,20 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   update() {
     this.FSM.step();
 
-    // movimiento por lanes
-    if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) this.move(-1);
-    if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) this.move(1);
+    // movimiento por lanes con InputSystem
+    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.LEFT)) this.move(-1);
+    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.RIGHT)) this.move(1);
 
     // salto
-    if (Phaser.Input.Keyboard.JustDown(this.jumpKey) && this.FSM.state === 'normal') {
+    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.WEST, "player2") && this.FSM.state === 'normal') {
       this.FSM.transition('jumping', { duration: 1000 });
       console.log("¡Saltó!");
     }
 
-    // disparo normal (si tenés otra mecánica con SHIFT)
-    if (Phaser.Input.Keyboard.JustDown(this.shootKey) && this.hasGomera === false) {
+    /* disparo normal (placeholder)
+    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.EAST) && !this.hasGomera) {
       this.shoot();
-    }
+    }*/
 
     // --------------------------
     // CONTROL DE LA GOMERA + MIRA
@@ -167,7 +156,7 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     if (this.hasGomera) {
       this.handleMiraMovement();
 
-      if (Phaser.Input.Keyboard.JustDown(this.aimKeys.fire)) {
+      if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.EAST, "player1")) {
         this.fireGomera();
       }
     }
@@ -182,18 +171,17 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   }
 
   shoot() {
-    console.log("Disparó la gomera (placeholder proyectil)!");
+    console.log("Disparó la bici (placeholder proyectil)!");
   }
 
   // --- Movimiento de la mira con WASD ---
   handleMiraMovement() {
     const speed = 5;
-    if (this.aimKeys.left.isDown) this.mira.x -= speed;
-    if (this.aimKeys.right.isDown) this.mira.x += speed;
-    if (this.aimKeys.up.isDown) this.mira.y -= speed;
-    if (this.aimKeys.down.isDown) this.mira.y += speed;
+    if (this.scene.inputSystem.isPressed(INPUT_ACTIONS.LEFT, "player2")) this.mira.x -= speed;
+    if (this.scene.inputSystem.isPressed(INPUT_ACTIONS.RIGHT, "player2")) this.mira.x += speed;
+    if (this.scene.inputSystem.isPressed(INPUT_ACTIONS.UP, "player2")) this.mira.y -= speed;
+    if (this.scene.inputSystem.isPressed(INPUT_ACTIONS.DOWN, "player2")) this.mira.y += speed;
 
-    // límites dentro de la pantalla
     const { width, height } = this.scene.sys.game.config;
     this.mira.x = Phaser.Math.Clamp(this.mira.x, 0, width);
     this.mira.y = Phaser.Math.Clamp(this.mira.y, 0, height);
@@ -202,16 +190,12 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   // --- Disparo de la gomera ---
   fireGomera() {
     const camion = this.scene.camion;
-
-    // chequeo simple: ¿está la mira dentro del área del camión?
     const bounds = camion.getBounds();
     if (Phaser.Geom.Rectangle.Contains(bounds, this.mira.x, this.mira.y)) {
       console.log("¡Le pegó al camión!");
     } else {
       console.log("Falló el disparo...");
     }
-
-    // reset estado
     this.hasGomera = false;
     this.mira.setVisible(false);
   }
@@ -220,8 +204,8 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   giveGomera() {
     this.hasGomera = true;
     this.mira.setVisible(true);
-    this.mira.x = this.x;       // aparece cerca del jugador
-    this.mira.y = this.y - 200; // un poco arriba
+    this.mira.x = this.x;
+    this.mira.y = this.y - 200;
   }
 
   handleCollision(obstaculo) {
@@ -256,6 +240,37 @@ export class Game extends Scene {
       this.lanes.push(marginX + laneWidth / 2 + i * laneWidth);
     }
 
+    // InputSystem
+    this.inputSystem = new InputSystem(this.input);
+    this.inputSystem.configureKeyboard({
+      [INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
+      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.S],
+      [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.F],
+      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
+      [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.UP],
+      [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.DOWN],
+      [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.LEFT],
+      [INPUT_ACTIONS.RIGHT]: [Phaser.Input.Keyboard.KeyCodes.RIGHT],
+    },
+      "player1"
+    );
+
+        this.inputSystem = new InputSystem(this.input);
+    this.inputSystem.configureKeyboard({
+      [INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
+      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.S],
+      [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.F],
+      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
+      [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.UP],
+      [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.DOWN],
+      [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.LEFT],
+      [INPUT_ACTIONS.RIGHT]: [Phaser.Input.Keyboard.KeyCodes.RIGHT],
+    },
+      "player2"
+    );
+
+
+
     // líneas divisorias
     for (let i = 1; i < laneCount; i++) {
       const lineX = marginX + i * laneWidth;
@@ -280,29 +295,13 @@ export class Game extends Scene {
     this.camion = this.physics.add.sprite(this.lanes[this.camionLane], 100, 'camion');
     this.camion.setScale(4);
 
-    // OBSTÁCULOS
-    this.poolCajas = this.physics.add.group({
-      classType: Caja,
-      maxSize: 20,
-      runChildUpdate: true
-    });
-    this.poolTomates = this.physics.add.group({
-      classType: Tomate,
-      maxSize: 10,
-      runChildUpdate: true
-    });
-    this.poolBananas = this.physics.add.group({
-      classType: Banana,
-      maxSize: 20,
-      runChildUpdate: true
-    });
+    // pools de obstáculos...
+    this.poolCajas = this.physics.add.group({ classType: Caja, maxSize: 20, runChildUpdate: true });
+    this.poolTomates = this.physics.add.group({ classType: Tomate, maxSize: 10, runChildUpdate: true });
+    this.poolBananas = this.physics.add.group({ classType: Banana, maxSize: 20, runChildUpdate: true });
 
     // --- GOMERAS ---
-    this.poolGomeras = this.physics.add.group({
-      classType: PickupGomera,
-      maxSize: 5,
-      runChildUpdate: true
-    });
+    this.poolGomeras = this.physics.add.group({ classType: PickupGomera, maxSize: 5, runChildUpdate: true });
     this.physics.add.overlap(this.player, this.poolGomeras, (player, gomera) => {
       gomera.deactivate();
       this.player.giveGomera();
@@ -310,18 +309,12 @@ export class Game extends Scene {
     });
     this.scheduleNextGomera();
 
-    // COLISIONES
-    this.physics.add.overlap(this.player, this.poolCajas, (player, obstaculo) => {
-      this.player.handleCollision(obstaculo);
-    });
-    this.physics.add.overlap(this.player, this.poolTomates, (player, obstaculo) => {
-      this.player.handleCollision(obstaculo);
-    });
-    this.physics.add.overlap(this.player, this.poolBananas, (player, obstaculo) => {
-      this.player.handleCollision(obstaculo);
-    });
+    // colisiones
+    this.physics.add.overlap(this.player, this.poolCajas, (p, o) => this.player.handleCollision(o));
+    this.physics.add.overlap(this.player, this.poolTomates, (p, o) => this.player.handleCollision(o));
+    this.physics.add.overlap(this.player, this.poolBananas, (p, o) => this.player.handleCollision(o));
 
-    // STATE MACHINE DEL CAMIÓN (igual que antes)
+    // FSM del camión...
     this.camionFSM = new StateMachine('idle', {
       idle: {
         enter: () => { this.camionTimer = 0; },
@@ -385,6 +378,7 @@ export class Game extends Scene {
   }
 
   update() {
+    //this.inputSystem.update(); // refresca InputSystem
     this.player.update();
     this.camionFSM.step();
   }
@@ -424,7 +418,7 @@ export class Game extends Scene {
     this.time.delayedCall(delay, () => {
       const lane = Phaser.Math.Between(0, this.lanes.length - 1);
       this.spawnObstaculo(PickupGomera, this.lanes[lane], 0);
-      this.scheduleNextGomera(); // programar el próximo
+      this.scheduleNextGomera();
     });
   }
 }
