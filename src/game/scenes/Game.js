@@ -136,8 +136,8 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     this.FSM.step();
 
     // movimiento por lanes con InputSystem
-    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.LEFT)) this.move(-1);
-    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.RIGHT)) this.move(1);
+    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.LEFT, "player1")) this.move(-1);
+    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.RIGHT, "player1")) this.move(1);
 
     // salto
     if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.WEST, "player2") && this.FSM.state === 'normal') {
@@ -226,27 +226,15 @@ export class Game extends Scene {
   }
 
   create() {
-    this.cameras.main.setBackgroundColor(0x00ff00);
 
-    const gameWidth = 1024;
-    const gameHeight = 768;
-
-    const marginX = 200;
-    const laneCount = 5;
-    const laneWidth = (gameWidth - marginX * 2) / laneCount;
-
-    this.lanes = [];
-    for (let i = 0; i < laneCount; i++) {
-      this.lanes.push(marginX + laneWidth / 2 + i * laneWidth);
-    }
 
     // InputSystem
     this.inputSystem = new InputSystem(this.input);
     this.inputSystem.configureKeyboard({
-      [INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
-      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.S],
-      [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.F],
-      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
+      //[INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
+      //[INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.S],
+      [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.K],
+      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.L],
       [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.UP],
       [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.DOWN],
       [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.LEFT],
@@ -255,46 +243,69 @@ export class Game extends Scene {
       "player1"
     );
 
-        this.inputSystem = new InputSystem(this.input);
     this.inputSystem.configureKeyboard({
-      [INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
-      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.S],
+      //[INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
+      //[INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.S],
       [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.F],
       [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
-      [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.UP],
-      [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.DOWN],
-      [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.LEFT],
-      [INPUT_ACTIONS.RIGHT]: [Phaser.Input.Keyboard.KeyCodes.RIGHT],
+      [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.W],
+      [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.S],
+      [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.A],
+      [INPUT_ACTIONS.RIGHT]: [Phaser.Input.Keyboard.KeyCodes.D],
     },
       "player2"
     );
 
 
 
-    // líneas divisorias
-    for (let i = 1; i < laneCount; i++) {
-      const lineX = marginX + i * laneWidth;
-      this.add.rectangle(lineX, gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
-    }
+this.cameras.main.setBackgroundColor(0x00ff00);
 
-    // fondo de la calle
-    this.add.rectangle(
-      gameWidth / 2,
-      gameHeight / 2,
-      gameWidth - marginX * 2,
-      gameHeight,
-      0x444444,
-      0.3
-    ).setDepth(-1);
+  // tamaño lógico del gameplay (lo mantenemos igual)
+  const gameWidth = 1024;
+  const gameHeight = 768;
 
-    // PLAYER
-    this.player = new PlayerBike(this, this.lanes[2], 600, this.lanes);
+  // tamaño real del canvas
+  const screenWidth = this.sys.game.config.width;
+  const screenHeight = this.sys.game.config.height;
 
-    // CAMIÓN
-    this.camionLane = 2;
-    this.camion = this.physics.add.sprite(this.lanes[this.camionLane], 100, 'camion');
-    this.camion.setScale(4);
+  // offset para centrar
+  const offsetX = (screenWidth - gameWidth) / 2;
+  const offsetY = (screenHeight - gameHeight) / 2;
 
+  const marginX = 200;
+  const laneCount = 5;
+  const laneWidth = (gameWidth - marginX * 2) / laneCount;
+
+  this.lanes = [];
+  for (let i = 0; i < laneCount; i++) {
+    this.lanes.push(offsetX + marginX + laneWidth / 2 + i * laneWidth);
+  }
+
+  // líneas divisorias
+  for (let i = 1; i < laneCount; i++) {
+    const lineX = offsetX + marginX + i * laneWidth;
+    this.add.rectangle(lineX, offsetY + gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
+  }
+
+  // fondo de la calle
+  this.add.rectangle(
+    offsetX + gameWidth / 2,
+    offsetY + gameHeight / 2,
+    gameWidth - marginX * 2,
+    gameHeight,
+    0x444444,
+    0.3
+  ).setDepth(-1);
+
+  // PLAYER
+  this.player = new PlayerBike(this, this.lanes[2], offsetY + 600, this.lanes);
+
+  // CAMIÓN
+  this.camionLane = 2;
+  this.camion = this.physics.add.sprite(this.lanes[this.camionLane], offsetY + 100, 'camion');
+  this.camion.setScale(4);
+
+  
     // pools de obstáculos...
     this.poolCajas = this.physics.add.group({ classType: Caja, maxSize: 20, runChildUpdate: true });
     this.poolTomates = this.physics.add.group({ classType: Tomate, maxSize: 10, runChildUpdate: true });
