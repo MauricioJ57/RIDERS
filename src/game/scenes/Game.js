@@ -195,6 +195,19 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     const bounds = camion.getBounds();
     if (Phaser.Geom.Rectangle.Contains(bounds, this.mira.x, this.mira.y)) {
       console.log("¡Le pegó al camión!");
+      this.scene.camion.setTint(0xff0000);
+      this.colorCamion = this.scene.time.addEvent({
+        delay: 500,
+        callback: () => { this.scene.camion.clearTint(); },
+        callbackScope: this,
+        loop: false
+      });
+      this.scene.vidasCamion -= 1;
+      this.scene.textoVidasCamion.setText('Vidas Camión: ' + this.scene.vidasCamion);
+      if (this.scene.vidasCamion <= 0) {
+        console.log("¡Camión destruido!");
+        this.scene.scene.start('GameOver');
+      }
     } else {
       console.log("Falló el disparo...");
     }
@@ -217,6 +230,10 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     }
     console.log(`Golpeado por ${obstaculo.tipo}`);
     obstaculo.deactivate();
+    this.scene.gameOver = true;
+    if (this.scene.gameOver) {
+      this.scene.scene.start('GameOver');
+    }
   }
 }
 
@@ -229,6 +246,12 @@ export class Game extends Scene {
 
   create() {
 
+    // --- CONDICION DE GAME OVER ---
+    this.gameOver = false;
+
+    // --- VIDAS DEL CAMION ---
+    this.vidasCamion = 3;
+    this.textoVidasCamion = this.add.text(16, 16, 'Vidas Camión: ' + this.vidasCamion, { fontSize: '32px', fill: '#000000ff' });
 
     // InputSystem
     this.inputSystem = new InputSystem(this.input);
@@ -319,6 +342,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
       gomera.deactivate();
       this.player.giveGomera();
       console.log("¡Agarró la gomera!");
+      this.gomerasRecogidas++;
     });
     this.scheduleNextGomera();
 

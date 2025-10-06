@@ -40,6 +40,7 @@ export class Preloader extends Scene
         this.load.image('banana', 'banana_ph.png');
         this.load.image('tomates', 'tomates_ph.png');
         this.load.image('mira', 'mirilla.png');
+        this.load.image('ciudad', 'basev3.png');
 
     }
 
