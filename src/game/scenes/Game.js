@@ -429,7 +429,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
 
     // --- MOVIMIENTO DE LA CIUDAD ---
     if (this.fondoCiudad) {
-      this.fondoCiudad.tilePositionY -= 1; // ESTO AJUSTA LA VELOCIDAD DEL FONDO
+      this.fondoCiudad.tilePositionY -= 10; // ESTO AJUSTA LA VELOCIDAD DEL FONDO
     }
   }
 

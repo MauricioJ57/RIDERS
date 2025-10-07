@@ -30,6 +30,10 @@ const config = {
       gravity: { y: 0 },
       debug: true,
     },
+    },
+    render: { 
+        pixelArt: true, 
+        antialias: false
     }
 };
 
