@@ -13,6 +13,9 @@ const config = {
     height: 1080,
     parent: 'game-container',
     backgroundColor: '#028af8',
+    input: {
+        gamepad: true
+    },
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -30,6 +33,10 @@ const config = {
       gravity: { y: 0 },
       debug: true,
     },
+    },
+    render: { 
+        pixelArt: true, 
+        antialias: false
     }
 };
 
