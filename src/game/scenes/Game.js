@@ -144,6 +144,9 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     // salto
     if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.WEST, "player2") && this.FSM.state === 'normal') {
       this.FSM.transition('jumping', { duration: 1000 });
+      this.setScale(4); // efecto visual de salto
+      this.scene.time.delayedCall(1000, () => { this.setScale(3); }, [], this);
+      this.setDepth(1); // PONE QUE EL JUGADOR SE SOBREPONGA SOBRE LOS TOMATES
       console.log("¡Saltó!");
     }
 
@@ -249,9 +252,14 @@ export class Game extends Scene {
     // --- CONDICION DE GAME OVER ---
     this.gameOver = false;
 
+    this.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
+
+    // --- TEXTO DE INFORMACION ---
+    this.add.text(960, 1000, 'Jugador 1: Flechas + K para disparar\nJugador 2: WASD + Espacio para saltar', { fontFamily: "arial", fontSize: '24px', fill: '#000000ff' }).setOrigin(0.5, 0);
+
     // --- VIDAS DEL CAMION ---
     this.vidasCamion = 3;
-    this.textoVidasCamion = this.add.text(16, 16, 'Vidas Camión: ' + this.vidasCamion, { fontSize: '32px', fill: '#000000ff' });
+    this.textoVidasCamion = this.add.text(960, 16, 'Vidas Camión: ' + this.vidasCamion, { fontFamily: "arial", fontSize: '32px', fill: '#000000ff' }).setOrigin(0.5, 0);
 
     // InputSystem
     this.inputSystem = new InputSystem(this.input);
@@ -328,7 +336,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
   // CAMIÓN
   this.camionLane = 2;
   this.camion = this.physics.add.sprite(this.lanes[this.camionLane], offsetY + 100, 'camion');
-  this.camion.setScale(4);
+  this.camion.setScale(5);
 
   
     // pools de obstáculos...
@@ -418,6 +426,11 @@ this.cameras.main.setBackgroundColor(0x00ff00);
     //this.inputSystem.update(); // refresca InputSystem
     this.player.update();
     this.camionFSM.step();
+
+    // --- MOVIMIENTO DE LA CIUDAD ---
+    if (this.fondoCiudad) {
+      this.fondoCiudad.tilePositionY -= 1; // ESTO AJUSTA LA VELOCIDAD DEL FONDO
+    }
   }
 
   moveCamion(direction) {
