@@ -254,6 +254,22 @@ export class Game extends Scene {
 
     this.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
 
+    // --- PUNTUACION ---
+    this.puntuacion = 0;
+
+    this.textoPuntuacion = this.add.text(16, 16, 'Puntuación: ' + this.puntuacion, { fontFamily: "arial", fontSize: '32px', fill: '#000000ff' });
+
+    this.puntuacionPorTiempo = this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.puntuacion += 10;
+        this.textoPuntuacion.setText('Puntuación: ' + this.puntuacion);
+      },
+      callbackScope: this,
+      loop: true
+    });
+    
+
     // --- TEXTO DE INFORMACION ---
     this.add.text(960, 1000, 'Jugador 1: Flechas + K para disparar\nJugador 2: WASD + Espacio para saltar', { fontFamily: "arial", fontSize: '24px', fill: '#000000ff' }).setOrigin(0.5, 0);
 
