@@ -60,7 +60,7 @@ class Caja extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'caja');
     this.tipo = 'caja';
-    this.setScale(2);
+    this.setScale(1);
   }
 }
 class Tomate extends Obstaculo {
@@ -68,14 +68,14 @@ class Tomate extends Obstaculo {
     super(scene, x, y, 'tomates');
     this.tipo = 'tomates';
     this.setDisplaySize(128, 32);
-    this.setScale(2.5);
+    this.setScale(1);
   }
 }
 class Banana extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'banana');
     this.tipo = 'banana';
-    this.setScale(2);
+    this.setScale(1);
   }
 }
 
@@ -85,7 +85,7 @@ class PickupGomera extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'gomera');
     this.tipo = 'gomera';
-    this.setScale(2);
+    this.setScale(1);
   }
 }
 
@@ -102,7 +102,7 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     this.lanes = lanes;
     this.currentLane = 2;
 
-    this.setScale(3);
+    this.setScale(1);
     this.setCollideWorldBounds(true);
 
     // GOMERA
@@ -143,9 +143,9 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
 
     // salto
     if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.WEST, "player2") && this.FSM.state === 'normal') {
-      this.FSM.transition('jumping', { duration: 1000 });
-      this.setScale(4); // efecto visual de salto
-      this.scene.time.delayedCall(1000, () => { this.setScale(3); }, [], this);
+      this.FSM.transition('jumping', { duration: 2000 });
+      this.setScale(1.5); // efecto visual de salto
+      this.scene.time.delayedCall(1000, () => { this.setScale(1); }, [], this);
       this.setDepth(1); // PONE QUE EL JUGADOR SE SOBREPONGA SOBRE LOS TOMATES
       console.log("¡Saltó!");
     }
@@ -336,7 +336,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
   // CAMIÓN
   this.camionLane = 2;
   this.camion = this.physics.add.sprite(this.lanes[this.camionLane], offsetY + 100, 'camion');
-  this.camion.setScale(5);
+  this.camion.setScale(1);
 
   
     // pools de obstáculos...
