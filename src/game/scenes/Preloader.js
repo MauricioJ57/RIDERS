@@ -41,6 +41,7 @@ export class Preloader extends Scene
         this.load.image('tomates', 'tomates(v2).png');
         this.load.image('mira', 'mirilla.png');
         this.load.image('ciudad', 'basev3.png');
+        this.load.image('boton', 'placeholder de boton.png');
 
     }
 
