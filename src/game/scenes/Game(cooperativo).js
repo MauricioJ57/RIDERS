@@ -110,6 +110,8 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     this.lives = 3; // el jugador arranca con 3 vidas
     this.invulnerable = false;
 
+    this.textoVidasJugador = this.scene.add.text(16, 60, 'Vidas Jugador: ' + this.lives, { fontFamily: "arial", fontSize: '32px', fill: '#000000ff' });
+
 
     // GOMERA
     this.hasGomera = false;
@@ -274,6 +276,7 @@ giveGomera() {
    perderVida() {
     this.lives--;
     console.log(`Perdió una vida. Vidas restantes: ${this.lives}`);
+    this.textoVidasJugador.setText('Vidas Jugador: ' + this.lives);
 
     if (this.lives <= 0) {
       console.log("Sin vidas — Game Over");

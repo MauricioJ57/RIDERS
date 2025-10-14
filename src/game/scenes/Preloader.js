@@ -31,9 +31,7 @@ export class Preloader extends Scene
     {
         //  Load the assets for the game - Replace with your own assets
         this.load.setPath('assets');
-
         this.load.image('logo', 'logo.png');
-        this.load.image('piedra', 'bala de jugador.png');
         this.load.spritesheet('bici', 'bici.png', {
   frameWidth: 64, // ancho de cada frame
   frameHeight: 128 // alto de cada frame
@@ -51,6 +49,10 @@ export class Preloader extends Scene
         this.load.image('mira', 'mirilla.png');
         this.load.image('ciudad', 'basev3.png');
         this.load.image('boton', 'placeholder de boton.png');
+        this.load.image('corazones-llenos', 'corazones completos.png');
+        this.load.image('dos corazones', 'dos corazones.png');
+        this.load.image('un corazon', 'un corazon.png');
+        this.load.image('sin-corazones', 'corazones(fila vacia).png');
 
     }
 
