@@ -109,9 +109,16 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     // === NUEVO ===
     this.lives = 3; // el jugador arranca con 3 vidas
     this.invulnerable = false;
+    
+    // --- COLOCACION DE IMAGENES(PUEDE OPTIMIZARSE MAS ADELANTE) ---
+    this.vidasVisiblesLlenas = this.scene.add.image(1600, 16, 'corazones-llenos').setOrigin(0, 0).setScrollFactor(0);
+    this.vidasVisiblesLlenas.setVisible(true);
 
-    this.textoVidasJugador = this.scene.add.text(16, 60, 'Vidas Jugador: ' + this.lives, { fontFamily: "arial", fontSize: '32px', fill: '#000000ff' });
+    this.vidasVisibles2 = this.scene.add.image(1600, 16, 'dos corazones').setOrigin(0, 0).setScrollFactor(0);
+    this.vidasVisibles2.setVisible(false);
 
+    this.vidasVisibles1 = this.scene.add.image(1600, 16, 'un corazon').setOrigin(0, 0).setScrollFactor(0);
+    this.vidasVisibles1.setVisible(false);
 
     // GOMERA
     this.hasGomera = false;
@@ -276,7 +283,17 @@ giveGomera() {
    perderVida() {
     this.lives--;
     console.log(`Perdió una vida. Vidas restantes: ${this.lives}`);
-    this.textoVidasJugador.setText('Vidas Jugador: ' + this.lives);
+    
+    // --- ELIMINACION Y COLOCACION DE IMAGENES(PUEDE OPTIMIZARSE MAS ADELANTE)
+    if (this.lives === 2) {
+      this.vidasVisiblesLlenas.setVisible(false);
+      this.vidasVisibles2.setVisible(true);
+    }
+
+    if (this.lives === 1) {
+      this.vidasVisibles2.setVisible(false);
+      this.vidasVisibles1.setVisible(true);
+    }
 
     if (this.lives <= 0) {
       console.log("Sin vidas — Game Over");
