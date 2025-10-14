@@ -34,11 +34,20 @@ export class Preloader extends Scene
 
         this.load.image('logo', 'logo.png');
         this.load.image('piedra', 'bala de jugador.png');
-        this.load.image('bici', 'chicos en bici.png');
-        this.load.image('camion', 'camion(v2).png');
-        this.load.image('caja', 'caja(v2).png');
-        this.load.image('banana', 'banana(v2).png');
-        this.load.image('tomates', 'tomates(v2).png');
+        this.load.spritesheet('bici', 'bici.png', {
+  frameWidth: 64, // ancho de cada frame
+  frameHeight: 128 // alto de cada frame
+});
+
+            this.load.spritesheet('gomera', 'gomera.png', {
+  frameWidth: 64, // ancho de cada frame
+  frameHeight: 64 // alto de cada frame
+});
+
+        this.load.image('camion', 'camion.png');
+        this.load.image('caja', 'caja.png');
+        this.load.image('banana', 'banana.png');
+        this.load.image('tomates', 'tomates.png');
         this.load.image('mira', 'mirilla.png');
         this.load.image('ciudad', 'basev3.png');
         this.load.image('boton', 'placeholder de boton.png');

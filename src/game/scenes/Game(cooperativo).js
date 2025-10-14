@@ -36,12 +36,12 @@ class Obstaculo extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, texture);
     scene.add.existing(this);
     scene.physics.add.existing(this);
-    this.setVelocityY(200);
+    this.setVelocityY(300);
   }
 
   reset(x, y) {
     this.enableBody(true, x, y, true, true);
-    this.setVelocityY(200);
+    this.setVelocityY(300);
   }
 
   deactivate() {
@@ -60,7 +60,7 @@ class Caja extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'caja');
     this.tipo = 'caja';
-    this.setScale(1);
+    this.setScale(1.5);
   }
 }
 class Tomate extends Obstaculo {
@@ -68,14 +68,14 @@ class Tomate extends Obstaculo {
     super(scene, x, y, 'tomates');
     this.tipo = 'tomates';
     this.setDisplaySize(128, 32);
-    this.setScale(1);
+    this.setScale(1.5);
   }
 }
 class Banana extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'banana');
     this.tipo = 'banana';
-    this.setScale(1);
+    this.setScale(1.5);
   }
 }
 
@@ -104,6 +104,12 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
 
     this.setScale(1);
     this.setCollideWorldBounds(true);
+    this.play('pedalear');
+
+    // === NUEVO ===
+    this.lives = 3; // el jugador arranca con 3 vidas
+    this.invulnerable = false;
+
 
     // GOMERA
     this.hasGomera = false;
@@ -143,7 +149,7 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
 
     // salto
     if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.WEST, "player2") && this.FSM.state === 'normal') {
-      this.FSM.transition('jumping', { duration: 2000 });
+      this.FSM.transition('jumping', { duration: 1000 });
       this.setScale(1.5); // efecto visual de salto
       this.scene.time.delayedCall(1000, () => { this.setScale(1); }, [], this);
       this.setDepth(1); // PONE QUE EL JUGADOR SE SOBREPONGA SOBRE LOS TOMATES
@@ -219,25 +225,82 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   }
 
   // --- Cuando agarra el power-up de gomera ---
-  giveGomera() {
+giveGomera() {
+  if (!this.hasGomera) {
+    // Solo posiciona la mira si todavía no tenía gomera
     this.hasGomera = true;
     this.mira.setVisible(true);
     this.mira.x = this.x;
     this.mira.y = this.y - 200;
+  } else {
+    // Si ya tenía, solo reactiva la visibilidad (por si estaba oculta)
+    this.mira.setVisible(true);
   }
+}
 
-  handleCollision(obstaculo) {
+ handleCollision(obstaculo) {
     if (this.FSM.state === 'jumping' && obstaculo.tipo === 'tomates') {
       console.log("Saltó los tomates!");
       return;
     }
-    console.log(`Golpeado por ${obstaculo.tipo}`);
-    obstaculo.deactivate();
-    this.scene.gameOver = true;
-    if (this.scene.gameOver) {
-      this.scene.scene.start('GameOver');
+
+    // === BANANA: sigue igual que antes ===
+    if (obstaculo.tipo === 'banana') {
+      console.log("Pisó una banana, se desliza!");
+      obstaculo.deactivate();
+
+      let direction;
+      if (this.currentLane === 0) {
+        direction = 1;
+      } else if (this.currentLane === this.lanes.length - 1) {
+        direction = -1;
+      } else {
+        direction = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
+      }
+
+      const newLane = this.currentLane + direction;
+      this.currentLane = newLane;
+      this.x = this.lanes[this.currentLane];
+      console.log(`Se deslizó al carril ${this.currentLane}`);
+      return;
+    }
+
+    // === CAJA o TOMATE: daño ===
+    if (!this.invulnerable && (obstaculo.tipo === 'caja' || obstaculo.tipo === 'tomates')) {
+      this.perderVida();
     }
   }
+
+   perderVida() {
+    this.lives--;
+    console.log(`Perdió una vida. Vidas restantes: ${this.lives}`);
+
+    if (this.lives <= 0) {
+      console.log("Sin vidas — Game Over");
+      this.scene.gameOver = true;
+      this.scene.scene.start('GameOver');
+      return;
+    }
+
+    // Activar invulnerabilidad
+    this.invulnerable = true;
+
+    // (Opcional) efecto visual de parpadeo
+    this.scene.tweens.add({
+      targets: this,
+      alpha: 0.3,
+      yoyo: true,
+      repeat: 6,
+      duration: 200
+    });
+
+    // Desactivar invulnerabilidad después de 2 segundos
+    this.scene.time.delayedCall(2000, () => {
+      this.invulnerable = false;
+      this.setAlpha(1);
+      console.log("Invulnerabilidad terminada");
+    });
+}
 }
 
 // -----------------------------
@@ -274,7 +337,7 @@ export class Game extends Scene {
     this.add.text(960, 1000, 'Jugador 1: Flechas + K para disparar\nJugador 2: WASD + Espacio para saltar', { fontFamily: "arial", fontSize: '24px', fill: '#000000ff' }).setOrigin(0.5, 0);
 
     // --- VIDAS DEL CAMION ---
-    this.vidasCamion = 3;
+    this.vidasCamion = 6;
     this.textoVidasCamion = this.add.text(960, 16, 'Vidas Camión: ' + this.vidasCamion, { fontFamily: "arial", fontSize: '32px', fill: '#000000ff' }).setOrigin(0.5, 0);
 
     // InputSystem
@@ -347,12 +410,19 @@ this.cameras.main.setBackgroundColor(0x00ff00);
   ).setDepth(-1);
 
   // PLAYER
-  this.player = new PlayerBike(this, this.lanes[2], offsetY + 600, this.lanes);
+  this.player = new PlayerBike(this, this.lanes[2], offsetY + 700, this.lanes);
+
+  this.anims.create({
+  key: 'pedalear',
+  frames: this.anims.generateFrameNumbers('bici', { start: 0, end: 1 }), // depende de cuántos frames tengas
+  frameRate: 10,
+  repeat: -1
+});
 
   // CAMIÓN
   this.camionLane = 2;
-  this.camion = this.physics.add.sprite(this.lanes[this.camionLane], offsetY + 100, 'camion');
-  this.camion.setScale(1);
+  this.camion = this.physics.add.sprite(this.lanes[this.camionLane], offsetY - 10, 'camion');
+  this.camion.setScale(0.9);
 
   
     // pools de obstáculos...
@@ -369,6 +439,12 @@ this.cameras.main.setBackgroundColor(0x00ff00);
       this.gomerasRecogidas++;
     });
     this.scheduleNextGomera();
+    this.anims.create({
+      key: 'GomeraParpadeo',
+      frames: this.anims.generateFrameNumbers('gomera', { start: 0, end: 1 }),
+      frameRate: 10,
+      repeat: -1
+    });
 
     // colisiones
     this.physics.add.overlap(this.player, this.poolCajas, (p, o) => this.player.handleCollision(o));
@@ -404,16 +480,184 @@ this.cameras.main.setBackgroundColor(0x00ff00);
       },
       pattern: {
         enter: () => {
-          this.patron = [
-            { lane: 0, tipo: Caja },
-            { lane: 1, tipo: Caja },
-            { lane: 3, tipo: Tomate }
-          ];
-          this.patronIndex = 0;
-          this.patternTimer = 0;
-          this.patternDelay = 15;
-          this.targetLane = this.patron[0].lane;
-        },
+      const patrones = [
+        // Patrón original de ejemplo
+        [
+          { lane: 0, tipo: Caja },
+          { lane: 1, tipo: Caja },
+          { lane: 3, tipo: Tomate }
+        ],
+
+        // Patrón 1: Combo de reflejos
+        [
+          { lane: 0, tipo: Caja },
+          { lane: 2, tipo: Caja },
+          { lane: 3, tipo: Tomate }
+        ],
+
+        // Patrón 2: Banana trampa
+        [
+          { lane: 1, tipo: Banana },
+          { lane: 2, tipo: Caja },
+          { lane: 3, tipo: Banana }
+        ],
+
+        // Patrón 3: Muralla
+        [
+          { lane: 2, tipo: Tomate },
+          { lane: 4, tipo: Caja },
+          { lane: 0, tipo: Caja }
+        ],
+
+        // Patrón 4: Zigzag de cajas
+        [
+          { lane: 1, tipo: Caja },
+          { lane: 2, tipo: Caja },
+          { lane: 3, tipo: Caja }
+        ],
+
+        // Patrón 5: Deslizamiento fatal
+        [
+          { lane: 2, tipo: Banana },
+          { lane: 3, tipo: Caja },
+          { lane: 1, tipo: Tomate }
+        ],
+
+        // Patrón 6: Triple amenaza
+        [
+          { lane: 0, tipo: Caja },
+          { lane: 2, tipo: Tomate },
+          { lane: 4, tipo: Banana }
+        ],
+
+        // Patrón 7: Finta del camión
+        [
+          { lane: 1, tipo: Tomate },
+          { lane: 4, tipo: Banana },
+          { lane: 3, tipo: Caja }
+        ],
+
+        // Patrón 8: Carril falso
+        [
+          { lane: 0, tipo: Caja },
+          { lane: 0, tipo: Banana },
+          { lane: 2, tipo: Tomate }
+        ],
+
+        // 9. Zig-zag agresivo
+        [
+          { lane: 0, tipo: Caja },
+          { lane: 1, tipo: Banana },
+          { lane: 2, tipo: Caja },
+          { lane: 3, tipo: Banana },
+          { lane: 2, tipo: Caja },
+          { lane: 1, tipo: Banana },
+          { lane: 0, tipo: Caja }
+        ],
+
+        // 10. Muro de cajas + salto central
+        [
+          { lane: 0, tipo: Caja },
+          { lane: 1, tipo: Caja },
+          { lane: 2, tipo: Tomate },
+          { lane: 3, tipo: Caja },
+          { lane: 4, tipo: Caja }
+        ],
+
+        // 11. Combo banana y tomates (caos)
+        [
+          { lane: 0, tipo: Banana },
+          { lane: 1, tipo: Tomate },
+          { lane: 3, tipo: Banana },
+          { lane: 4, tipo: Tomate }
+        ],
+
+        // 12. Línea de cajas con distracción
+        [
+          { lane: 1, tipo: Caja },
+          { lane: 2, tipo: Caja },
+          { lane: 3, tipo: Caja },
+          { lane: 0, tipo: Banana },
+          { lane: 4, tipo: Banana }
+        ],
+
+        // 13. Tomate en el medio y bordes molestos
+        [
+          { lane: 0, tipo: Banana },
+          { lane: 2, tipo: Tomate },
+          { lane: 4, tipo: Caja }
+        ],
+
+        // 14. Ataque diagonal
+        [
+          { lane: 0, tipo: Caja },
+          { lane: 1, tipo: Banana },
+          { lane: 2, tipo: Caja },
+          { lane: 3, tipo: Tomate }
+        ],
+
+        // 15. Pared + distracción
+        [
+          { lane: 0, tipo: Caja },
+          { lane: 1, tipo: Caja },
+          { lane: 2, tipo: Caja },
+          { lane: 3, tipo: Tomate }
+        ],
+
+        // 16. Caos total
+        [
+          { lane: 0, tipo: Banana },
+          { lane: 1, tipo: Caja },
+          { lane: 2, tipo: Banana },
+          { lane: 3, tipo: Caja },
+          { lane: 4, tipo: Tomate }
+        ],
+
+        // 17. Doble banana deslizante
+        [
+          { lane: 1, tipo: Banana },
+          { lane: 2, tipo: Caja },
+          { lane: 3, tipo: Banana },
+          { lane: 4, tipo: Caja }
+        ],
+
+        // 18. Doble tomate + distracción
+        [
+          { lane: 0, tipo: Tomate },
+          { lane: 3, tipo: Tomate },
+          { lane: 2, tipo: Banana }
+        ],
+
+        // 19. Muro mixto final
+        [
+          { lane: 0, tipo: Caja },
+          { lane: 1, tipo: Banana },
+          { lane: 2, tipo: Tomate },
+          { lane: 3, tipo: Banana },
+          { lane: 4, tipo: Caja }
+        ]
+      ];
+
+      // Elegir patrón al azar
+      this.patron = Phaser.Utils.Array.GetRandom(patrones);
+
+      // Corrige tomates en bordes
+for (let paso of this.patron) {
+  if (paso.tipo === Tomate) {
+    if (paso.lane === 0) paso.lane = 1;
+    if (paso.lane === 4) paso.lane = 3;
+  }
+}
+
+
+      this.patronIndex = 0;
+      this.patternTimer = 0;
+      this.patternDelay = 15;
+      this.targetLane = this.patron[0].lane;
+    },
+
+    
+
         execute: () => {
           this.patternTimer++;
           if (this.patternTimer >= this.patternDelay) {
@@ -423,7 +667,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
               else this.moveCamion(-1);
             } else {
               const paso = this.patron[this.patronIndex];
-              this.spawnObstaculo(paso.tipo, this.camion.x, this.camion.y + 40);
+              this.spawnObstaculo(paso.tipo, this.camion.x, this.camion.y + 120);
               this.patronIndex++;
               if (this.patronIndex < this.patron.length) {
                 this.targetLane = this.patron[this.patronIndex].lane;
@@ -457,16 +701,32 @@ this.cameras.main.setBackgroundColor(0x00ff00);
     }
   }
 
-  spawnObstaculo(Tipo, x, y) {
-    let pool;
-    if (Tipo === Caja) pool = this.poolCajas;
-    else if (Tipo === Tomate) pool = this.poolTomates;
-    else if (Tipo === Banana) pool = this.poolBananas;
-    else if (Tipo === PickupGomera) pool = this.poolGomeras;
+spawnObstaculo(Tipo, x, y) {
+  // === 1️⃣ Chequeo: evitar spawnear encima de una gomera activa ===
+  const hayGomeraCerca = this.poolGomeras.getChildren().some(g => 
+    g.active && Math.abs(g.x - x) < 80 && Math.abs(g.y - y) < 150
+  );
 
-    const obj = pool.get(x, y);
-    if (obj) obj.reset(x, y);
+  if (hayGomeraCerca) {
+    // Podés simplemente no spawnear (descartar este obstáculo)
+    console.log("Evita spawnear obstáculo sobre una gomera");
+    return;
+    // O si querés que lo retrase medio segundo:
+    // this.time.delayedCall(500, () => this.spawnObstaculo(Tipo, x, y));
+    // return;
   }
+
+  // === 2️⃣ Obtener el pool correcto según tipo ===
+  let pool;
+  if (Tipo === Caja) pool = this.poolCajas;
+  else if (Tipo === Tomate) pool = this.poolTomates;
+  else if (Tipo === Banana) pool = this.poolBananas;
+  else if (Tipo === PickupGomera) pool = this.poolGomeras;
+
+  // === 3️⃣ Spawnear el obstáculo normalmente ===
+  const obj = pool.get(x, y);
+  if (obj) obj.reset(x, y);
+}
 
   soltarObstaculo() {
     const tipo = Phaser.Math.RND.pick([Caja, Tomate, Banana]);
@@ -475,12 +735,12 @@ this.cameras.main.setBackgroundColor(0x00ff00);
       if (this.camionLane === 0) x = this.lanes[1];
       else if (this.camionLane === this.lanes.length - 1) x = this.lanes[this.lanes.length - 2];
     }
-    this.spawnObstaculo(tipo, x, this.camion.y + 40);
+    this.spawnObstaculo(tipo, x, this.camion.y + 120);
   }
 
   // --- Spawner de gomeras por tiempo ---
   scheduleNextGomera() {
-    const delay = Phaser.Math.Between(10000, 20000); // 10–20s
+    const delay = Phaser.Math.Between(5000, 10000); // 5–10s
     this.time.delayedCall(delay, () => {
       const lane = Phaser.Math.Between(0, this.lanes.length - 1);
       this.spawnObstaculo(PickupGomera, this.lanes[lane], 0);
