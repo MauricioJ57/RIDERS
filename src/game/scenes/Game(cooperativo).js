@@ -86,6 +86,7 @@ class PickupGomera extends Obstaculo {
     super(scene, x, y, 'gomera');
     this.tipo = 'gomera';
     this.setScale(1);
+    this.play('GomeraParpadeo');
   }
 }
 
@@ -464,7 +465,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
       frames: this.anims.generateFrameNumbers('gomera', { start: 0, end: 1 }),
       frameRate: 10,
       repeat: -1
-    });
+    });    
 
     // colisiones
     this.physics.add.overlap(this.player, this.poolCajas, (p, o) => this.player.handleCollision(o));
@@ -722,7 +723,7 @@ for (let paso of this.patron) {
   }
 
 spawnObstaculo(Tipo, x, y) {
-  // === 1️⃣ Chequeo: evitar spawnear encima de una gomera activa ===
+  // Chequeo: evitar spawnear encima de una gomera activa ===
   const hayGomeraCerca = this.poolGomeras.getChildren().some(g => 
     g.active && Math.abs(g.x - x) < 80 && Math.abs(g.y - y) < 150
   );

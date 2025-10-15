@@ -140,13 +140,13 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.RIGHT, "player1")) this.move(1);
 
     // salto
-    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.WEST, "player2") && this.FSM.state === 'normal') {
+    /*if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.WEST, "player2") && this.FSM.state === 'normal') {
       this.FSM.transition('jumping', { duration: 2000 });
       this.setScale(1.5); // efecto visual de salto
       this.scene.time.delayedCall(1000, () => { this.setScale(1); }, [], this);
       this.setDepth(1); // PONE QUE EL JUGADOR SE SOBREPONGA SOBRE LOS TOMATES
       console.log("¡Saltó!");
-    }
+    }*/
 
     /* disparo normal (placeholder)
     if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.EAST) && !this.hasGomera) {
@@ -178,7 +178,7 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   }
 
   // --- Movimiento de la mira con WASD ---
-  handleMiraMovement() {
+  /*handleMiraMovement() {
     const speed = 5;
     if (this.scene.inputSystem.isPressed(INPUT_ACTIONS.LEFT, "player2")) this.mira.x -= speed;
     if (this.scene.inputSystem.isPressed(INPUT_ACTIONS.RIGHT, "player2")) this.mira.x += speed;
@@ -188,7 +188,7 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     const { width, height } = this.scene.sys.game.config;
     this.mira.x = Phaser.Math.Clamp(this.mira.x, 0, width);
     this.mira.y = Phaser.Math.Clamp(this.mira.y, 0, height);
-  }
+  }*/
 
   // --- Disparo de la gomera ---
   fireGomera() {
@@ -447,7 +447,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
     }
   }
 
-  /*moveCamion(direction) {
+  moveCamion(direction) {
     const newLane = this.camionLane + direction;
     if (newLane >= 0 && newLane < this.lanes.length) {
       this.camionLane = newLane;
@@ -455,7 +455,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
     }
   }
 
-  spawnObstaculo(Tipo, x, y) {
+  /*spawnObstaculo(Tipo, x, y) {
     let pool;
     if (Tipo === Caja) pool = this.poolCajas;
     else if (Tipo === Tomate) pool = this.poolTomates;
