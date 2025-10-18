@@ -1,46 +1,63 @@
+// src/clases/Obstaculos.js
 import Phaser from 'phaser';
- 
-let obstaculosGroup = 0;
 
-class Obstaculo extends Phaser.Physics.Arcade.Sprite {
+export class Obstaculo extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
     scene.add.existing(this);
     scene.physics.add.existing(this);
-    this.setVelocityY(200); // velocidad base de caída
+    this.setVelocityY(300);
+  }
+
+  reset(x, y) {
+    this.enableBody(true, x, y, true, true);
+    this.setVelocityY(300);
+  }
+
+  deactivate() {
+    this.disableBody(true, true);
+  }
+
+  preUpdate(time, delta) {
+    super.preUpdate(time, delta);
+    if (this.y > this.scene.sys.game.config.height + 50) {
+      this.deactivate();
+    }
   }
 }
 
-class Caja extends Obstaculo {
+// --- SUBCLASES ---
+export class Caja extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'caja');
     this.tipo = 'caja';
-    this.setScale(2);
+    this.setScale(1.5);
   }
 }
 
-class Tomate extends Obstaculo {
+export class Tomate extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'tomates');
     this.tipo = 'tomates';
-    this.setDisplaySize(128, 32); // ocupa más ancho
-    this.setScale(2.5);
+    this.setDisplaySize(128, 32);
+    this.setScale(1.5);
   }
 }
 
-class Banana extends Obstaculo {
+export class Banana extends Obstaculo {
   constructor(scene, x, y) {
     super(scene, x, y, 'banana');
     this.tipo = 'banana';
-    this.setScale(2);
+    this.setScale(1.5);
   }
 }
 
-class Piedra extends Obstaculo {
+// --- POWER-UP ---
+export class PickupGomera extends Obstaculo {
   constructor(scene, x, y) {
-    super(scene, x, y, 'piedra');
-    this.tipo = 'piedra';
+    super(scene, x, y, 'gomera');
+    this.tipo = 'gomera';
+    this.setScale(1);
+    this.play('GomeraParpadeo');
   }
 }
-
-export { Caja, Tomate, Banana, Piedra, obstaculosGroup };

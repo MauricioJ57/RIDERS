@@ -1,97 +1,17 @@
-import Bici from "../clases/bici.js";
-import Camion from "../clases/camion.js";
 import { Scene } from 'phaser';
 import InputSystem, { INPUT_ACTIONS } from '../systems/InputSystem.js';
+import StateMachine from '../clases/StateMachine.js';
+import { Caja, Tomate, Banana, PickupGomera } from '../clases/obstaculos.js';
+import PlayerBike from '../clases/PlayerBike.js';
+
+
 
 // -----------------------------
-// CLASE STATE MACHINE GENÉRICA
-class StateMachine {
-  constructor(initial, possibleStates, context) {
-    this.initial = initial;
-    this.possibleStates = possibleStates;
-    this.context = context;
-    this.state = null;
-  }
-
-  step() {
-    if (!this.state) {
-      this.state = this.initial;
-      this.possibleStates[this.state].enter?.call(this.context);
-    }
-    this.possibleStates[this.state].execute?.call(this.context);
-  }
-
-  transition(newState, data) {
-    if (this.state === newState) return;
-    this.possibleStates[this.state].exit?.call(this.context);
-    this.state = newState;
-    this.possibleStates[this.state].enter?.call(this.context, data);
-  }
-}
 
 // -----------------------------
-// OBSTÁCULOS
-class Obstaculo extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, texture) {
-    super(scene, x, y, texture);
-    scene.add.existing(this);
-    scene.physics.add.existing(this);
-    this.setVelocityY(300);
-  }
-
-  reset(x, y) {
-    this.enableBody(true, x, y, true, true);
-    this.setVelocityY(300);
-  }
-
-  deactivate() {
-    this.disableBody(true, true);
-  }
-
-  preUpdate(time, delta) {
-    super.preUpdate(time, delta);
-    if (this.y > this.scene.sys.game.config.height + 50) {
-      this.deactivate();
-    }
-  }
-}
-
-class Caja extends Obstaculo {
-  constructor(scene, x, y) {
-    super(scene, x, y, 'caja');
-    this.tipo = 'caja';
-    this.setScale(1.5);
-  }
-}
-class Tomate extends Obstaculo {
-  constructor(scene, x, y) {
-    super(scene, x, y, 'tomates');
-    this.tipo = 'tomates';
-    this.setDisplaySize(128, 32);
-    this.setScale(1.5);
-  }
-}
-class Banana extends Obstaculo {
-  constructor(scene, x, y) {
-    super(scene, x, y, 'banana');
-    this.tipo = 'banana';
-    this.setScale(1.5);
-  }
-}
 
 // -----------------------------
-// POWER-UP: GOMERA
-class PickupGomera extends Obstaculo {
-  constructor(scene, x, y) {
-    super(scene, x, y, 'gomera');
-    this.tipo = 'gomera';
-    this.setScale(1);
-    this.play('GomeraParpadeo');
-  }
-}
-
-// -----------------------------
-// CLASE PLAYER BIKE
+/* CLASE PLAYER BIKE
 class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, lanes) {
     super(scene, x, y, 'bici');
@@ -106,6 +26,9 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     this.setScale(1);
     this.setCollideWorldBounds(true);
     this.play('pedalear');
+
+    this.setSize(40, 60);      // ancho, alto (ajustá según tu sprite)
+    //this.setOffset(10, 20);    // desplazamiento del hitbox respecto al sprite
 
     // === NUEVO ===
     this.lives = 3; // el jugador arranca con 3 vidas
@@ -169,7 +92,7 @@ class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     /* disparo normal (placeholder)
     if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.EAST) && !this.hasGomera) {
       this.shoot();
-    }*/
+    }
 
     // --------------------------
     // CONTROL DE LA GOMERA + MIRA
@@ -323,6 +246,7 @@ giveGomera() {
     });
 }
 }
+*/
 
 // -----------------------------
 // ESCENA PRINCIPAL
@@ -332,6 +256,10 @@ export class Game extends Scene {
   }
 
   create() {
+
+    this.lastSpawnTime = 0;
+    this.spawnCooldown = 800; // milisegundos de espera entre spawns (0.5 segundos)
+
 
     // --- CONDICION DE GAME OVER ---
     this.gameOver = false;
@@ -478,7 +406,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
         enter: () => { this.camionTimer = 0; },
         execute: () => {
           this.camionTimer++;
-          if (this.camionTimer > 60) {
+          if (this.camionTimer > 40) {
             const choice = Phaser.Math.Between(0, 2);
             if (choice === 0) this.camionFSM.transition('move');
             else if (choice === 1) this.camionFSM.transition('drop');
@@ -495,7 +423,11 @@ this.cameras.main.setBackgroundColor(0x00ff00);
       },
       drop: {
         enter: () => {
-          this.soltarObstaculo();
+          const now = this.time.now;
+          if (now - this.lastSpawnTime >= this.spawnCooldown) {
+            this.soltarObstaculo();
+            this.lastSpawnTime = now;
+          }
           this.camionFSM.transition('idle');
         }
       },
@@ -673,32 +605,55 @@ for (let paso of this.patron) {
 
       this.patronIndex = 0;
       this.patternTimer = 0;
-      this.patternDelay = 15;
+      this.patternDelay = 10;
       this.targetLane = this.patron[0].lane;
     },
 
     
 
-        execute: () => {
-          this.patternTimer++;
-          if (this.patternTimer >= this.patternDelay) {
-            this.patternTimer = 0;
-            if (this.camionLane !== this.targetLane) {
-              if (this.camionLane < this.targetLane) this.moveCamion(1);
-              else this.moveCamion(-1);
-            } else {
-              const paso = this.patron[this.patronIndex];
-              this.spawnObstaculo(paso.tipo, this.camion.x, this.camion.y + 120);
-              this.patronIndex++;
-              if (this.patronIndex < this.patron.length) {
-                this.targetLane = this.patron[this.patronIndex].lane;
-              } else {
-                this.camionFSM.transition('idle');
-              }
-            }
-          }
-        },
-        exit: () => { this.patron = null; }
+execute: () => {
+  this.patternTimer++;
+  if (this.patternTimer >= this.patternDelay) {
+    this.patternTimer = 0;
+
+    if (this.camionLane !== this.targetLane) {
+      if (this.camionLane < this.targetLane) this.moveCamion(1);
+      else this.moveCamion(-1);
+    } else {
+      const paso = this.patron[this.patronIndex];
+      this.spawnObstaculo(paso.tipo, this.camion.x, this.camion.y + 120);
+
+      // --- 🧠 Nueva lógica de separación inteligente ---
+      const pasoActual = this.patron[this.patronIndex];
+      const pasoSiguiente = this.patron[this.patronIndex + 1];
+
+      if (pasoSiguiente) {
+        // Detectar si los lanes se "superponen" por tamaño del tomate
+        const ocupaMismoLane =
+          pasoSiguiente.lane === pasoActual.lane ||
+          (pasoActual.tipo === Tomate &&
+            Math.abs(pasoSiguiente.lane - pasoActual.lane) <= 1) ||
+          (pasoSiguiente.tipo === Tomate &&
+            Math.abs(pasoSiguiente.lane - pasoActual.lane) <= 1);
+
+        if (ocupaMismoLane) {
+          this.patternDelay = 20; // más tiempo si se superponen
+        } else {
+          this.patternDelay = 10; // ritmo normal
+        }
+      }
+      // ----------------------------------------------
+
+      this.patronIndex++;
+      if (this.patronIndex < this.patron.length) {
+        this.targetLane = this.patron[this.patronIndex].lane;
+      } else {
+        this.camionFSM.transition('idle');
+      }
+    }
+  }
+},
+exit: () => { this.patron = null; }
       }
     }, this);
   }
@@ -732,19 +687,16 @@ spawnObstaculo(Tipo, x, y) {
     // Podés simplemente no spawnear (descartar este obstáculo)
     console.log("Evita spawnear obstáculo sobre una gomera");
     return;
-    // O si querés que lo retrase medio segundo:
-    // this.time.delayedCall(500, () => this.spawnObstaculo(Tipo, x, y));
-    // return;
   }
 
-  // === 2️⃣ Obtener el pool correcto según tipo ===
+  // === Obtener el pool correcto según tipo ===
   let pool;
   if (Tipo === Caja) pool = this.poolCajas;
   else if (Tipo === Tomate) pool = this.poolTomates;
   else if (Tipo === Banana) pool = this.poolBananas;
   else if (Tipo === PickupGomera) pool = this.poolGomeras;
 
-  // === 3️⃣ Spawnear el obstáculo normalmente ===
+  // === Spawnear el obstáculo normalmente ===
   const obj = pool.get(x, y);
   if (obj) obj.reset(x, y);
 }
