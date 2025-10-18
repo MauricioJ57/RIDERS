@@ -255,6 +255,29 @@ export class Game extends Scene {
     super('Game');
   }
 
+  crearBarraVidaCamion(maxVidas) {
+  this.vidasCamion = maxVidas;
+  this.vidasCamionMax = maxVidas;
+
+  const barWidth = 300;
+  const barHeight = 25;
+  const posX = 960;
+  const posY = 40;
+
+  // Fondo
+  this.barraFondo = this.add.rectangle(posX, posY, barWidth, barHeight, 0x000000).setOrigin(0.5);
+
+  // Barra de vida
+  this.barraVida = this.add.rectangle(posX - barWidth / 2, posY, barWidth, barHeight, 0xff0000)
+    .setOrigin(0, 0.5);
+
+  // Borde
+  this.barraBorde = this.add.rectangle(posX, posY, barWidth + 4, barHeight + 4)
+    .setStrokeStyle(2, 0xffffff)
+    .setOrigin(0.5);
+}
+
+
   create() {
 
     this.lastSpawnTime = 0;
@@ -286,8 +309,7 @@ export class Game extends Scene {
     this.add.text(960, 1000, 'Jugador 1: Flechas + K para disparar\nJugador 2: WASD + Espacio para saltar', { fontFamily: "arial", fontSize: '24px', fill: '#000000ff' }).setOrigin(0.5, 0);
 
     // --- VIDAS DEL CAMION ---
-    this.vidasCamion = 6;
-    this.textoVidasCamion = this.add.text(960, 16, 'Vidas Camión: ' + this.vidasCamion, { fontFamily: "arial", fontSize: '32px', fill: '#000000ff' }).setOrigin(0.5, 0);
+    this.crearBarraVidaCamion(6);
 
     // InputSystem
     this.inputSystem = new InputSystem(this.input);

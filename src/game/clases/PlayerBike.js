@@ -102,9 +102,16 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     if (acierta) {
       camion.setTint(0xff0000);
       this.scene.time.delayedCall(500, () => camion.clearTint());
-      this.scene.vidasCamion -= 1;
-      this.scene.textoVidasCamion.setText('Vidas Camión: ' + this.scene.vidasCamion);
-      if (this.scene.vidasCamion <= 0) this.scene.scene.start('GameOver');
+    this.scene.vidasCamion -= 1;
+
+    // Actualiza visualmente la barra
+    const porcentaje = this.scene.vidasCamion / this.scene.vidasCamionMax;
+    const nuevaAnchura = 300 * porcentaje;
+    this.scene.barraVida.width = Math.max(0, nuevaAnchura);
+
+    if (this.scene.vidasCamion <= 0) {
+      this.scene.scene.start('GameOver');
+  }
     }
 
     this.hasGomera = false;
