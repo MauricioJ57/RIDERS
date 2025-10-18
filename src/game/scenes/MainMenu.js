@@ -61,7 +61,7 @@ export class MainMenu extends Scene
         })
 
         containerVersus.on('pointerup', () => {
-            this.scene.start('GameVersus')
+            this.scene.start('Versus')
             console.log('Versus')
         });
 
