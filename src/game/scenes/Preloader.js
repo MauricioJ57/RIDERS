@@ -53,6 +53,10 @@ export class Preloader extends Scene
         this.load.image('dos corazones', 'dos corazones.png');
         this.load.image('un corazon', 'un corazon.png');
         this.load.image('sin-corazones', 'corazones(fila vacia).png');
+        this.load.image('jugadorSaltoMira', 'chico rojo.png');
+        this.load.image('jugadorMovimientoDisparo', 'chico verde.png');
+        this.load.image('controlDisparo', 'control jugador verde.png');
+        this.load.image('controlMira', 'control jugador rojo.png');
 
     }
 

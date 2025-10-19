@@ -9,6 +9,10 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
+    // --- formas de acceder al gameOver (revisar) ---
+    this.ganoJugador = false;
+    this.perdioJugador = false;
+
     this.scene = scene;
     this.lanes = lanes;
     this.currentLane = 2;
@@ -25,9 +29,26 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     this.invulnerable = false;
 
     // interfaz de corazones
-    this.vidasVisiblesLlenas = scene.add.image(1600, 16, 'corazones-llenos').setOrigin(0, 0).setScrollFactor(0);
-    this.vidasVisibles2 = scene.add.image(1600, 16, 'dos corazones').setOrigin(0, 0).setScrollFactor(0).setVisible(false);
-    this.vidasVisibles1 = scene.add.image(1600, 16, 'un corazon').setOrigin(0, 0).setScrollFactor(0).setVisible(false);
+    this.vidasVisiblesLlenas = scene.add.image(960, 1000, 'corazones-llenos').setScrollFactor(0);
+    this.vidasVisibles2 = scene.add.image(960, 1000, 'dos corazones').setScrollFactor(0).setVisible(false);
+    this.vidasVisibles1 = scene.add.image(960, 1000, 'un corazon').setScrollFactor(0).setVisible(false);
+
+    // efecto de camara
+    this.shakeCamera = this.scene.cameras.add(0, 0, this.scene.sys.game.config.width, this.scene.sys.game.config.height).setScroll(0, 0);
+
+    //interfaz de jugadores
+    this.hudJugadorMovimiento = scene.add.image(200, 1000, 'jugadorMovimientoDisparo').setScrollFactor(0).setDepth(1);
+    this.hudJugadorMira = scene.add.image(1800, 1000, 'jugadorSaltoMira').setScrollFactor(0).setDepth(1);
+
+    this.HudControlDisparo = scene.add.image(400, 1000, 'controlDisparo').setScrollFactor(0).setDepth(1);
+    this.HudControlMira = scene.add.image(1600, 1000, 'controlMira').setScrollFactor(0).setDepth(1);
+
+    // figuras genericas (remplazar mas tarde por consumo de recursos)
+    this.marcoHudMovimiento2 = scene.add.rectangle(200, 980, 220, 170, 0xff0000ff, 1);
+    this.marcoHudMovimiento1 = scene.add.rectangle(200, 980, 200, 150, 0xffffff, 1);
+    
+    this.marcoHudMira2 = scene.add.rectangle(1800, 980, 220, 170, 0xff0000ff, 1);
+    this.marcoHudMira1 = scene.add.rectangle(1800, 980, 200, 150, 0xffffff, 1);
 
     // gomera
     this.hasGomera = false;
@@ -151,11 +172,13 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
       this.vidasVisibles2.setVisible(false);
       this.vidasVisibles1.setVisible(true);
     } else if (this.lives <= 0) {
+      this.scene.perdioJugador = true;
       this.scene.scene.start('GameOver');
       return;
     }
 
     this.invulnerable = true;
+    this.shakeCamera.shake(500, 0.001);
     this.scene.tweens.add({ targets: this, alpha: 0.3, yoyo: true, repeat: 6, duration: 200 });
     this.scene.time.delayedCall(2000, () => {
       this.invulnerable = false;

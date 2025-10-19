@@ -89,7 +89,7 @@ export class MainMenu extends Scene
             if (this.lineasActual === 0) {
                 this.scene.start('Game');
             } else if (this.lineasActual === 1) {
-                this.scene.start('GameVersus');
+                this.scene.start('Versus');
             }
         });
 
