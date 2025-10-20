@@ -276,15 +276,15 @@ export class Game extends Scene {
        strokeThickness: 2 
       });
 
-    this.puntuacionPorTiempo = this.time.addEvent({
+    /*this.puntuacionPorTiempo = this.time.addEvent({
       delay: 1000,
       callback: () => {
         this.puntuacion += 10;
         this.textoPuntuacion.setText('Puntuación: ' + this.puntuacion);
       },
       callbackScope: this,
-      loop: true
-    });
+      loop: true,
+    });*/
 
     // --- VIDAS DEL CAMION ---
     this.vidasCamion = 6;
@@ -319,8 +319,6 @@ export class Game extends Scene {
     );
 
 
-
-this.cameras.main.setBackgroundColor(0x00ff00);
 
   // tamaño lógico del gameplay (lo mantenemos igual)
   const gameWidth = 1024;
@@ -373,6 +371,47 @@ this.cameras.main.setBackgroundColor(0x00ff00);
   this.camionLane = 2;
   this.camion = this.physics.add.sprite(this.lanes[this.camionLane], offsetY - 10, 'camion');
   this.camion.setScale(0.9);
+
+  // --- INTRO: mostrar solo player + fondo durante 3s ---
+  this.introRunning = true;
+  
+  // Ocultar elementos que no deben mostrarse en la intro
+  this.camion.setVisible(false);
+  this.textoVidasCamion.setVisible(false);
+  this.textoPuntuacion.setVisible(false);
+
+  // texto de tutorial
+  this.textoIntroduccion = this.add.text(960, 100, 'COMO JUGAR', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  // imagen inicial de tutorial
+  this.tutorial = this.add.rectangle(960, 540, 1700, 1000, 0x000000).setAlpha(0.9).setDepth(2);
+
+  this.fondoTransparente = this.add.rectangle(960, 540, 2000, 1200, 0x000000).setAlpha(0.5).setDepth(1);
+
+  // Texto de cuenta atrás
+  this.countdownValue = 10;
+  this.countdownText = this.add.text(this.sys.game.config.width/2, this.sys.game.config.height/2, String(this.countdownValue), {
+    fontFamily: 'Arial',
+    fontSize: '96px',
+    color: '#ffffff'
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(10);
+
+  // Evento que actualiza la cuenta atrás cada segundo
+  this.countdownEvent = this.time.addEvent({
+    delay: 1000,
+    repeat: this.countdownValue - 1,
+    callback: () => {
+      this.countdownValue -= 1;
+      if (this.countdownValue > 0) {
+        this.countdownText.setText(String(this.countdownValue));
+      }
+    }
+  });
+
+  // Evitar que se programen gomeras antes de terminar la intro
+  this._scheduleGomeraPending = true;
+  // Ejecutar función que termina la intro en 10s
+  this.time.delayedCall(10000, this.startGameplay, [], this);
 
   
     // pools de obstáculos...
@@ -660,6 +699,11 @@ exit: () => { this.patron = null; }
   }
 
   update() {
+    if (this.introRunning) {
+      // Durante la intro no ejecutamos la lógica de juego
+      return;
+    }
+
     //this.inputSystem.update(); // refresca InputSystem
     this.player.update();
     this.camionFSM.step();
@@ -714,11 +758,60 @@ spawnObstaculo(Tipo, x, y) {
 
   // --- Spawner de gomeras por tiempo ---
   scheduleNextGomera() {
+    // Si la intro está corriendo, marca pendiente y espera a startGameplay
+    if (this.introRunning) {
+      this._scheduleGomeraPending = true;
+      return;
+    }
+
     const delay = Phaser.Math.Between(5000, 10000); // 5–10s
     this.time.delayedCall(delay, () => {
       const lane = Phaser.Math.Between(0, this.lanes.length - 1);
       this.spawnObstaculo(PickupGomera, this.lanes[lane], 0);
       this.scheduleNextGomera();
     });
+  }
+
+  // --- Finaliza la intro y arranca la jugabilidad ---
+  startGameplay() {
+    this.introRunning = false;
+    // Mostrar elementos ocultos
+    this.camion.setVisible(true);
+    this.textoVidasCamion.setVisible(true);
+    this.textoPuntuacion.setVisible(true);
+
+    this.puntuacionPorTiempo = this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.puntuacion += 10;
+        this.textoPuntuacion.setText('Puntuación: ' + this.puntuacion);
+      },
+      callbackScope: this,
+      loop: true,
+    });
+
+    // Reiniciar timers / eventos que deben empezar ahora
+    // Reanudar spawn de gomeras si estaba pendiente
+    if (this._scheduleGomeraPending) {
+      this._scheduleGomeraPending = false;
+      this.scheduleNextGomera();
+    }
+
+    // Quitar texto de cuenta atrás si existe
+    if (this.countdownText) {
+      this.countdownText.setVisible(false);
+      this.countdownText.destroy();
+      this.countdownText = null;
+    }
+    if (this.countdownEvent) {
+      this.tutorial.setVisible(false)
+      this.fondoCiudad.setAlpha(1);
+      this.textoIntroduccion.setVisible(false);
+      this.fondoTransparente.setVisible(false);
+    }
+    if (this.countdownEvent) {
+      this.countdownEvent.remove(false);
+      this.countdownEvent = null;
+    }
   }
 }

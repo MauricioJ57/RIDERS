@@ -74,12 +74,55 @@ export class Versus extends Scene {
     this.physics.add.overlap(this.player1, this.poolCajas, (p, o) => p.handleCollision(o));
     this.physics.add.overlap(this.player1, this.poolTomates, (p, o) => p.handleCollision(o));
     this.physics.add.overlap(this.player1, this.poolBananas, (p, o) => p.handleCollision(o));
+
+    
+  // --- INTRO: mostrar solo player + fondo durante 3s ---
+  this.introRunning = true;
+
+  // texto de tutorial
+  this.textoIntroduccion = this.add.text(960, 100, 'COMO JUGAR', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  // imagen inicial de tutorial
+  this.tutorial = this.add.rectangle(960, 540, 1700, 1000, 0x000000).setAlpha(0.9).setDepth(2);
+
+  this.fondoTransparente = this.add.rectangle(960, 540, 2000, 1200, 0x000000).setAlpha(0.5).setDepth(1);
+
+  // Texto de cuenta atrás
+  this.countdownValue = 10;
+  this.countdownText = this.add.text(this.sys.game.config.width/2, this.sys.game.config.height/2, String(this.countdownValue), {
+    fontFamily: 'Arial',
+    fontSize: '96px',
+    color: '#ffffff'
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(10);
+
+  // Evento que actualiza la cuenta atrás cada segundo
+  this.countdownEvent = this.time.addEvent({
+    delay: 1000,
+    repeat: this.countdownValue - 1,
+    callback: () => {
+      this.countdownValue -= 1;
+      if (this.countdownValue > 0) {
+        this.countdownText.setText(String(this.countdownValue));
+      }
+    }
+  });
+
+  // Evitar que se programen gomeras antes de terminar la intro
+  this._scheduleGomeraPending = true;
+  // Ejecutar función que termina la intro en 10s
+  this.time.delayedCall(10000, this.startGameplay, [], this);
+
   }
 
   update() {
     if (this.player1) this.player1.update();         // Jugador 1: bici
     if (this.player2) this.player2.update();         // Jugador 2: camión
     this.fondoCiudad.tilePositionY -= 10;
+    
+    if (this.introRunning) {
+      // Durante la intro no ejecutamos la lógica de juego
+      return;
+    }
   }
 
   updateSlotUI(selected, slots) {
@@ -97,5 +140,26 @@ export class Versus extends Scene {
 
     const obj = pool.get(x, y);
     if (obj) obj.reset(x, y);
+  }
+
+  startGameplay() {
+    this.introRunning = false;
+    // Mostrar elementos ocultos
+
+    // Quitar texto de cuenta atrás si existe
+    if (this.countdownText) {
+      this.countdownText.setVisible(false);
+      this.countdownText.destroy();
+      this.countdownText = null;
+    }
+    if (this.countdownEvent) {
+      this.tutorial.setVisible(false)
+      this.fondoCiudad.setAlpha(1);
+      this.fondoTransparente.setVisible(false);
+    }
+    if (this.countdownEvent) {
+      this.countdownEvent.remove(false);
+      this.countdownEvent = null;
+    }
   }
 }
