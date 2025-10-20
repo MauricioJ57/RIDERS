@@ -4,261 +4,53 @@ import StateMachine from '../clases/StateMachine.js';
 import { Caja, Tomate, Banana, PickupGomera } from '../clases/obstaculos.js';
 import PlayerBike from '../clases/PlayerBike.js';
 
-
-
-// -----------------------------
-
-// -----------------------------
-
-// -----------------------------
-/* CLASE PLAYER BIKE
-class PlayerBike extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, lanes) {
-    super(scene, x, y, 'bici');
-
-    scene.add.existing(this);
-    scene.physics.add.existing(this);
-
-    this.scene = scene;
-    this.lanes = lanes;
-    this.currentLane = 2;
-
-    this.setScale(1);
-    this.setCollideWorldBounds(true);
-    this.play('pedalear');
-
-    this.setSize(40, 60);      // ancho, alto (ajustá según tu sprite)
-    //this.setOffset(10, 20);    // desplazamiento del hitbox respecto al sprite
-
-    // === NUEVO ===
-    this.lives = 3; // el jugador arranca con 3 vidas
-    this.invulnerable = false;
-    
-    // --- COLOCACION DE IMAGENES(PUEDE OPTIMIZARSE MAS ADELANTE) ---
-    this.vidasVisiblesLlenas = this.scene.add.image(1600, 16, 'corazones-llenos').setOrigin(0, 0).setScrollFactor(0);
-    this.vidasVisiblesLlenas.setVisible(true);
-
-    this.vidasVisibles2 = this.scene.add.image(1600, 16, 'dos corazones').setOrigin(0, 0).setScrollFactor(0);
-    this.vidasVisibles2.setVisible(false);
-
-    this.vidasVisibles1 = this.scene.add.image(1600, 16, 'un corazon').setOrigin(0, 0).setScrollFactor(0);
-    this.vidasVisibles1.setVisible(false);
-
-    // GOMERA
-    this.hasGomera = false;
-
-    // MIRA (oculta al inicio)
-    this.mira = scene.add.sprite(this.x, this.y - 200, 'mira');
-    this.mira.setDepth(1);
-    this.mira.setVisible(false);
-
-    // STATE MACHINE
-    this.FSM = new StateMachine('normal', {
-      normal: {
-        enter: () => {},
-        execute: () => {},
-        exit: () => {}
-      },
-      jumping: {
-        enter: (data) => {
-          this.jumpUntil = this.scene.time.now + data.duration;
-        },
-        execute: () => {
-          if (this.scene.time.now > this.jumpUntil) {
-            this.FSM.transition('normal');
-          }
-        },
-        exit: () => { this.jumpUntil = null; }
-      }
-    }, this);
-  }
-
-  update() {
-    this.FSM.step();
-
-    // movimiento por lanes con InputSystem
-    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.LEFT, "player1")) this.move(-1);
-    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.RIGHT, "player1")) this.move(1);
-
-    // salto
-    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.WEST, "player2") && this.FSM.state === 'normal') {
-      this.FSM.transition('jumping', { duration: 1000 });
-      this.setScale(1.5); // efecto visual de salto
-      this.scene.time.delayedCall(1000, () => { this.setScale(1); }, [], this);
-      this.setDepth(1); // PONE QUE EL JUGADOR SE SOBREPONGA SOBRE LOS TOMATES
-      console.log("¡Saltó!");
-    }
-
-    /* disparo normal (placeholder)
-    if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.EAST) && !this.hasGomera) {
-      this.shoot();
-    }
-
-    // --------------------------
-    // CONTROL DE LA GOMERA + MIRA
-    // --------------------------
-    if (this.hasGomera) {
-      this.handleMiraMovement();
-
-      if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.EAST, "player1")) {
-        this.fireGomera();
-      }
-    }
-  }
-
-  move(direction) {
-    const newLane = this.currentLane + direction;
-    if (newLane >= 0 && newLane < this.lanes.length) {
-      this.currentLane = newLane;
-      this.x = this.lanes[this.currentLane];
-    }
-  }
-
-  shoot() {
-    console.log("Disparó la bici (placeholder proyectil)!");
-  }
-
-  // --- Movimiento de la mira con WASD ---
-  handleMiraMovement() {
-    const speed = 5;
-    if (this.scene.inputSystem.isPressed(INPUT_ACTIONS.LEFT, "player2")) this.mira.x -= speed;
-    if (this.scene.inputSystem.isPressed(INPUT_ACTIONS.RIGHT, "player2")) this.mira.x += speed;
-    if (this.scene.inputSystem.isPressed(INPUT_ACTIONS.UP, "player2")) this.mira.y -= speed;
-    if (this.scene.inputSystem.isPressed(INPUT_ACTIONS.DOWN, "player2")) this.mira.y += speed;
-
-    const { width, height } = this.scene.sys.game.config;
-    this.mira.x = Phaser.Math.Clamp(this.mira.x, 0, width);
-    this.mira.y = Phaser.Math.Clamp(this.mira.y, 0, height);
-  }
-
-  // --- Disparo de la gomera ---
-  fireGomera() {
-    const camion = this.scene.camion;
-    const bounds = camion.getBounds();
-    if (Phaser.Geom.Rectangle.Contains(bounds, this.mira.x, this.mira.y)) {
-      console.log("¡Le pegó al camión!");
-      this.scene.camion.setTint(0xff0000);
-      this.colorCamion = this.scene.time.addEvent({
-        delay: 500,
-        callback: () => { this.scene.camion.clearTint(); },
-        callbackScope: this,
-        loop: false
-      });
-      this.scene.vidasCamion -= 1;
-      this.scene.textoVidasCamion.setText('Vidas Camión: ' + this.scene.vidasCamion);
-      if (this.scene.vidasCamion <= 0) {
-        console.log("¡Camión destruido!");
-        this.scene.scene.start('GameOver');
-      }
-    } else {
-      console.log("Falló el disparo...");
-    }
-    this.hasGomera = false;
-    this.mira.setVisible(false);
-  }
-
-  // --- Cuando agarra el power-up de gomera ---
-giveGomera() {
-  if (!this.hasGomera) {
-    // Solo posiciona la mira si todavía no tenía gomera
-    this.hasGomera = true;
-    this.mira.setVisible(true);
-    this.mira.x = this.x;
-    this.mira.y = this.y - 200;
-  } else {
-    // Si ya tenía, solo reactiva la visibilidad (por si estaba oculta)
-    this.mira.setVisible(true);
-  }
-}
-
- handleCollision(obstaculo) {
-    if (this.FSM.state === 'jumping' && obstaculo.tipo === 'tomates') {
-      console.log("Saltó los tomates!");
-      return;
-    }
-
-    // === BANANA: sigue igual que antes ===
-    if (obstaculo.tipo === 'banana') {
-      console.log("Pisó una banana, se desliza!");
-      obstaculo.deactivate();
-
-      let direction;
-      if (this.currentLane === 0) {
-        direction = 1;
-      } else if (this.currentLane === this.lanes.length - 1) {
-        direction = -1;
-      } else {
-        direction = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
-      }
-
-      const newLane = this.currentLane + direction;
-      this.currentLane = newLane;
-      this.x = this.lanes[this.currentLane];
-      console.log(`Se deslizó al carril ${this.currentLane}`);
-      return;
-    }
-
-    // === CAJA o TOMATE: daño ===
-    if (!this.invulnerable && (obstaculo.tipo === 'caja' || obstaculo.tipo === 'tomates')) {
-      this.perderVida();
-    }
-  }
-
-   perderVida() {
-    this.lives--;
-    console.log(`Perdió una vida. Vidas restantes: ${this.lives}`);
-    
-    // --- ELIMINACION Y COLOCACION DE IMAGENES(PUEDE OPTIMIZARSE MAS ADELANTE)
-    if (this.lives === 2) {
-      this.vidasVisiblesLlenas.setVisible(false);
-      this.vidasVisibles2.setVisible(true);
-    }
-
-    if (this.lives === 1) {
-      this.vidasVisibles2.setVisible(false);
-      this.vidasVisibles1.setVisible(true);
-    }
-
-    if (this.lives <= 0) {
-      console.log("Sin vidas — Game Over");
-      this.scene.gameOver = true;
-      this.scene.scene.start('GameOver');
-      return;
-    }
-
-    // Activar invulnerabilidad
-    this.invulnerable = true;
-
-    // (Opcional) efecto visual de parpadeo
-    this.scene.tweens.add({
-      targets: this,
-      alpha: 0.3,
-      yoyo: true,
-      repeat: 6,
-      duration: 200
-    });
-
-    // Desactivar invulnerabilidad después de 2 segundos
-    this.scene.time.delayedCall(2000, () => {
-      this.invulnerable = false;
-      this.setAlpha(1);
-      console.log("Invulnerabilidad terminada");
-    });
-}
-}
-*/
-
-// -----------------------------
 // ESCENA PRINCIPAL
 export class Game extends Scene {
   constructor() {
     super('Game');
   }
 
+crearBarraVidaCamion(maxVidas) {
+  this.vidasCamion = maxVidas;
+  this.vidasCamionMax = maxVidas;
+
+  const barWidth = 300;
+  const barHeight = 25;
+  const posX = 960; // centrada arriba
+  const posY = 40;
+
+  // Fondo negro
+  this.barraFondo = this.add.rectangle(posX, posY, barWidth, barHeight, 0x000000).setOrigin(0.5);
+
+  // Barra roja (vida)
+  this.barraVida = this.add.rectangle(posX - barWidth / 2, posY, barWidth, barHeight, 0xff0000)
+    .setOrigin(0, 0.5);
+
+  // Borde blanco
+  this.barraBorde = this.add.rectangle(posX, posY, barWidth + 4, barHeight + 4)
+    .setStrokeStyle(2, 0xffffff)
+    .setOrigin(0.5);
+}
+
+actualizarBarraVidaCamion(vidas, vidasMax) {
+  const barWidth = 300;
+  const porcentaje = Phaser.Math.Clamp(vidas / vidasMax, 0, 1);
+  this.barraVida.width = barWidth * porcentaje;
+}
+
+
   create() {
 
     this.lastSpawnTime = 0;
     this.spawnCooldown = 800; // milisegundos de espera entre spawns (0.5 segundos)
+
+      this.anims.create({
+  key: 'pedalear',
+  frames: this.anims.generateFrameNumbers('bici', { start: 0, end: 1 }), // depende de cuántos frames tengas
+  frameRate: 10,
+  repeat: -1
+});
+
 
 
     // --- CONDICION DE GAME OVER ---
@@ -287,16 +79,15 @@ export class Game extends Scene {
     });*/
 
     // --- VIDAS DEL CAMION ---
-    this.vidasCamion = 6;
-    this.textoVidasCamion = this.add.text(960, 16, 'Vidas Camión: ' + this.vidasCamion, { fontFamily: "arial", fontSize: '32px', fill: '#000000ff' }).setOrigin(0.5, 0);
+    this.crearBarraVidaCamion(6);
 
     // InputSystem
     this.inputSystem = new InputSystem(this.input);
     this.inputSystem.configureKeyboard({
       //[INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
-      //[INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.S],
-      [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.K],
-      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.L],
+      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
+      //[INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.K],
+      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.K],
       [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.UP],
       [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.DOWN],
       [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.LEFT],
@@ -309,7 +100,7 @@ export class Game extends Scene {
       //[INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
       //[INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.S],
       [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.F],
-      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
+      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
       [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.W],
       [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.S],
       [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.A],
@@ -360,17 +151,21 @@ export class Game extends Scene {
   // PLAYER
   this.player = new PlayerBike(this, this.lanes[2], offsetY + 700, this.lanes);
 
-  this.anims.create({
-  key: 'pedalear',
-  frames: this.anims.generateFrameNumbers('bici', { start: 0, end: 1 }), // depende de cuántos frames tengas
-  frameRate: 10,
-  repeat: -1
-});
-
   // CAMIÓN
   this.camionLane = 2;
   this.camion = this.physics.add.sprite(this.lanes[this.camionLane], offsetY - 10, 'camion');
   this.camion.setScale(0.9);
+
+  // --- Efecto de vibración del camión ---
+this.tweens.add({
+  targets: this.camion,
+  y: this.camion.y + 2,
+  duration: 100,
+  yoyo: true,
+  repeat: -1,
+  ease: 'Sine.easeInOut'
+});
+
 
   // --- INTRO: mostrar solo player + fondo durante 3s ---
   this.introRunning = true;
@@ -663,7 +458,7 @@ execute: () => {
       const paso = this.patron[this.patronIndex];
       this.spawnObstaculo(paso.tipo, this.camion.x, this.camion.y + 120);
 
-      // --- 🧠 Nueva lógica de separación inteligente ---
+      // --- Nueva lógica de separación inteligente ---
       const pasoActual = this.patron[this.patronIndex];
       const pasoSiguiente = this.patron[this.patronIndex + 1];
 

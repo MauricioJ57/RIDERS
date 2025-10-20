@@ -9,10 +9,14 @@ export class Obstaculo extends Phaser.Physics.Arcade.Sprite {
     this.setVelocityY(300);
   }
 
-  reset(x, y) {
-    this.enableBody(true, x, y, true, true);
-    this.setVelocityY(300);
-  }
+reset(x, y) {
+  this.enableBody(true, x, y, true, true);
+
+  // si estamos en el modo Versus, aumentamos la velocidad
+  const velocidadBase = 300;
+  const velocidadExtra = (this.scene.scene.key === 'Versus') ? 200 : 0;
+  this.body.setVelocityY(velocidadBase + velocidadExtra);
+}
 
   deactivate() {
     this.disableBody(true, true);

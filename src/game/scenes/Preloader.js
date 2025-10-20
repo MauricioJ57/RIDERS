@@ -53,10 +53,13 @@ export class Preloader extends Scene
         this.load.image('dos corazones', 'dos corazones.png');
         this.load.image('un corazon', 'un corazon.png');
         this.load.image('sin-corazones', 'corazones(fila vacia).png');
-        this.load.image('jugadorSaltoMira', 'chico rojo.png');
-        this.load.image('jugadorMovimientoDisparo', 'chico verde.png');
-        this.load.image('controlDisparo', 'control jugador verde.png');
-        this.load.image('controlMira', 'control jugador rojo.png');
+        this.load.image('caja_icon', 'caja_icon.png');
+        this.load.image('bananas_icon', 'bananas_icon.png');
+        this.load.image('tomates_icon', 'tomates_icon.png');
+        this.load.image('chico_rojo', 'chico rojo.png');
+        this.load.image('chico_verde', 'chico verde.png');
+
+        this.load.spritesheet('bicigomera', 'bicigomera.png', { frameWidth: 64, frameHeight: 128 });
 
     }
 
