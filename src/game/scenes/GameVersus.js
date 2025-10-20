@@ -69,8 +69,10 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     this.inputSystem.configureKeyboard({
       [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.LEFT],
       [INPUT_ACTIONS.RIGHT]: [Phaser.Input.Keyboard.KeyCodes.RIGHT],
-      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
-      [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.K]
+      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.K],
+      //[INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.K],
+      //[INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.UP],
+      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.SPACE]
     }, "player1");
 
     // Controles jugador 2 (camión)
@@ -80,7 +82,8 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
       [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.W],
       [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.S],
       [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.F],
-      [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.E]
+      //[INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.E]
+      [INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.G]
     }, "player2");
 
     // === Lanes (mismo cálculo que el modo cooperativo) ===

@@ -85,9 +85,9 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     this.inputSystem = new InputSystem(this.input);
     this.inputSystem.configureKeyboard({
       //[INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
-      //[INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.S],
-      [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.K],
-      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.L],
+      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
+      //[INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.K],
+      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.K],
       [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.UP],
       [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.DOWN],
       [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.LEFT],
@@ -100,7 +100,7 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
       //[INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
       //[INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.S],
       [INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.F],
-      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
+      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
       [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.W],
       [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.S],
       [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.A],
@@ -419,7 +419,7 @@ execute: () => {
       const paso = this.patron[this.patronIndex];
       this.spawnObstaculo(paso.tipo, this.camion.x, this.camion.y + 120);
 
-      // --- 🧠 Nueva lógica de separación inteligente ---
+      // --- Nueva lógica de separación inteligente ---
       const pasoActual = this.patron[this.patronIndex];
       const pasoSiguiente = this.patron[this.patronIndex + 1];
 

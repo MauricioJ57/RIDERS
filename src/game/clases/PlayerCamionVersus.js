@@ -69,11 +69,11 @@ const icon = scene.add.image(slotBg.x, slotBg.y, 'iconVacio').setDisplaySize(ico
     if (input.isJustPressed(INPUT_ACTIONS.RIGHT, "player2")) this.move(1);
 
     // cambiar slot
-    if (input.isJustPressed(INPUT_ACTIONS.UP, "player2")) this.cambiarSlot(-1);
-    if (input.isJustPressed(INPUT_ACTIONS.DOWN, "player2")) this.cambiarSlot(1);
+    //if (input.isJustPressed(INPUT_ACTIONS.UP, "player2")) this.cambiarSlot(-1);
+    if (input.isJustPressed(INPUT_ACTIONS.NORTH, "player2")) this.cambiarSlot(1);
 
     // soltar obstáculo
-    if (input.isJustPressed(INPUT_ACTIONS.EAST, "player2")) this.throwObstaculo();
+    if (input.isJustPressed(INPUT_ACTIONS.WEST, "player2")) this.throwObstaculo();
   }
 
   move(direction) {
@@ -120,7 +120,7 @@ this.actualizarSlotsVisuales();
 
   // --- Si todos los slots están vacíos → recargar ---
   if (this.slots.every(slot => slot === null)) {
-    this.scene.time.delayedCall(2000, () => this.rellenarSlots());
+    this.scene.time.delayedCall(100, () => this.rellenarSlots());
   }
 }
 

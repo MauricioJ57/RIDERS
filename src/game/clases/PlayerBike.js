@@ -6,6 +6,16 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, lanes) {
     super(scene, x, y, 'bici');
 
+    if (!scene.anims.exists('biciConGomera')) {
+  scene.anims.create({
+    key: 'biciConGomera',
+    frames: scene.anims.generateFrameNumbers('bicigomera', { start: 0, end: 1 }),
+    frameRate: 10,
+    repeat: -1
+  });
+}
+
+
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -49,10 +59,6 @@ this.vidasVisibles1 = scene.add.image(centerX, posY, 'un corazon')
   .setScrollFactor(0)
   .setVisible(false)
   .setDepth(100);
-    // interfaz de corazones
-    this.vidasVisiblesLlenas = scene.add.image(960, 1000, 'corazones-llenos').setScrollFactor(0);
-    this.vidasVisibles2 = scene.add.image(960, 1000, 'dos corazones').setScrollFactor(0).setVisible(false);
-    this.vidasVisibles1 = scene.add.image(960, 1000, 'un corazon').setScrollFactor(0).setVisible(false);
 
     // efecto de camara
     this.shakeCamera = this.scene.cameras.add(0, 0, this.scene.sys.game.config.width, this.scene.sys.game.config.height).setScroll(0, 0);
@@ -100,18 +106,22 @@ this.vidasVisibles1 = scene.add.image(centerX, posY, 'un corazon')
 // salto
 const jumperId = (this.scene.scene.key === 'Versus') ? "player1" : "player2";
 
-if (input.isJustPressed(INPUT_ACTIONS.WEST, jumperId) && this.FSM.state === 'normal') {
-  this.FSM.transition('jumping', { duration: 1000 });
+if (input.isJustPressed(INPUT_ACTIONS.WEST, "player1") && this.FSM.state === 'normal') {
+  // Si es el modo Versus, el salto dura menos tiempo
+  const esVersus = this.scene.scene.key === 'Versus';
+  const duracionSalto = esVersus ? 700 : 1000;   // duración total del estado de salto
+  const duracionTween = esVersus ? 350 : 500;    // duración del "sube y baja"
+
+  this.FSM.transition('jumping', { duration: duracionSalto });
   this.setDepth(1);
 
-  // tween de subida y bajada suave
   this.scene.tweens.add({
     targets: this,
     scale: 1.5,
-    duration: 500,
+    duration: duracionTween,
     ease: 'Quad.easeOut',
     yoyo: true,
-    hold: 100,
+    hold: 80,
     onComplete: () => {
       this.setDepth(0);
       this.FSM.transition('normal');
@@ -130,7 +140,7 @@ if (input.isJustPressed(INPUT_ACTIONS.WEST, jumperId) && this.FSM.state === 'nor
       }
 
       // Disparo (en ambos modos)
-      if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.EAST, "player1")) {
+      if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.WEST, "player1")) {
         this.fireGomera();
       }
     }
@@ -192,6 +202,7 @@ fireGomera() {
   // Termina el uso de la gomera
   this.hasGomera = false;
   this.mira.setVisible(false);
+  this.play('pedalear');
 }
 
   giveGomera() {
@@ -203,6 +214,8 @@ fireGomera() {
     } else {
       this.mira.setVisible(true);
     }
+
+    this.play('biciConGomera');
   }
 
   handleCollision(obstaculo) {
