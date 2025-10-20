@@ -24,10 +24,26 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     this.lives = 3;
     this.invulnerable = false;
 
-    // interfaz de corazones
-    this.vidasVisiblesLlenas = scene.add.image(1600, 16, 'corazones-llenos').setOrigin(0, 0).setScrollFactor(0);
-    this.vidasVisibles2 = scene.add.image(1600, 16, 'dos corazones').setOrigin(0, 0).setScrollFactor(0).setVisible(false);
-    this.vidasVisibles1 = scene.add.image(1600, 16, 'un corazon').setOrigin(0, 0).setScrollFactor(0).setVisible(false);
+// interfaz de corazones (centrados abajo)
+const centerX = scene.scale.width / 2; // centro horizontal de la pantalla
+const posY = scene.scale.height - 80;  // un poco arriba del borde inferior
+
+this.vidasVisiblesLlenas = scene.add.image(centerX, posY, 'corazones-llenos')
+  .setOrigin(0.5, 0.5)
+  .setScrollFactor(0)
+  .setDepth(100);
+
+this.vidasVisibles2 = scene.add.image(centerX, posY, 'dos corazones')
+  .setOrigin(0.5, 0.5)
+  .setScrollFactor(0)
+  .setVisible(false)
+  .setDepth(100);
+
+this.vidasVisibles1 = scene.add.image(centerX, posY, 'un corazon')
+  .setOrigin(0.5, 0.5)
+  .setScrollFactor(0)
+  .setVisible(false)
+  .setDepth(100);
 
     // gomera
     this.hasGomera = false;
@@ -55,18 +71,42 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     if (input.isJustPressed(INPUT_ACTIONS.LEFT, "player1")) this.move(-1);
     if (input.isJustPressed(INPUT_ACTIONS.RIGHT, "player1")) this.move(1);
 
-    // salto
-    if (input.isJustPressed(INPUT_ACTIONS.WEST, "player2") && this.FSM.state === 'normal') {
-      this.FSM.transition('jumping', { duration: 1000 });
-      this.setScale(1.5);
-      this.scene.time.delayedCall(1000, () => this.setScale(1));
-      this.setDepth(1);
-    }
+// salto
+const jumperId = (this.scene.scene.key === 'Versus') ? "player1" : "player2";
 
-    // uso de la gomera
+if (input.isJustPressed(INPUT_ACTIONS.WEST, jumperId) && this.FSM.state === 'normal') {
+  this.FSM.transition('jumping', { duration: 1000 });
+  this.setDepth(1);
+
+  // tween de subida y bajada suave
+  this.scene.tweens.add({
+    targets: this,
+    scale: 1.5,
+    duration: 500,
+    ease: 'Quad.easeOut',
+    yoyo: true,
+    hold: 100,
+    onComplete: () => {
+      this.setDepth(0);
+      this.FSM.transition('normal');
+    }
+  });
+}
+
     if (this.hasGomera) {
-      this.handleMiraMovement();
-      if (input.isJustPressed(INPUT_ACTIONS.EAST, "player1")) this.fireGomera();
+      // Si estamos en Versus, la mira se mantiene fija delante de la bici
+      if (this.scene.scene.key === 'Versus') {
+        this.mira.x = this.x;
+        this.mira.y = this.y - 150;
+      } else {
+        // En cooperativo sigue siendo controlable
+        this.handleMiraMovement();
+      }
+
+      // Disparo (en ambos modos)
+      if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.EAST, "player1")) {
+        this.fireGomera();
+      }
     }
   }
 
@@ -92,31 +132,41 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     this.mira.y = Phaser.Math.Clamp(this.mira.y, 0, height);
   }
 
-  fireGomera() {
-    const camion = this.scene.camion;
-    const bounds = camion.getBounds();
+fireGomera() {
+  const camion = this.scene.camion;
+  if (!camion) return;
 
-    const acierta = Phaser.Geom.Rectangle.Contains(bounds, this.mira.x, this.mira.y) ||
-                    this.currentLane === this.scene.camionLane;
+  const bounds = camion.getBounds();
 
-    if (acierta) {
-      camion.setTint(0xff0000);
-      this.scene.time.delayedCall(500, () => camion.clearTint());
+  // Golpea si la mira está sobre el camión o en el mismo lane
+  const acierta =
+    (this.mira.visible && Phaser.Geom.Rectangle.Contains(bounds, this.mira.x, this.mira.y)) ||
+    this.currentLane === this.scene.camionLane;
+
+  if (acierta) {
+    camion.setTint(0xff0000);
+    this.scene.time.delayedCall(500, () => camion.clearTint());
+
+    // Reducir vida del camión
     this.scene.vidasCamion -= 1;
+    if (this.scene.vidasCamion < 0) this.scene.vidasCamion = 0;
 
-    // Actualiza visualmente la barra
-    const porcentaje = this.scene.vidasCamion / this.scene.vidasCamionMax;
-    const nuevaAnchura = 300 * porcentaje;
-    this.scene.barraVida.width = Math.max(0, nuevaAnchura);
-
-    if (this.scene.vidasCamion <= 0) {
-      this.scene.scene.start('GameOver');
-  }
+    // Actualizar barra visual
+    if (this.scene.actualizarBarraVidaCamion) {
+      this.scene.actualizarBarraVidaCamion(this.scene.vidasCamion, this.scene.vidasCamionMax);
     }
 
-    this.hasGomera = false;
-    this.mira.setVisible(false);
+    // Verificar destrucción
+    if (this.scene.vidasCamion <= 0) {
+      console.log("¡Camión destruido!");
+      this.scene.scene.start('GameOver');
+    }
   }
+
+  // Termina el uso de la gomera
+  this.hasGomera = false;
+  this.mira.setVisible(false);
+}
 
   giveGomera() {
     if (!this.hasGomera) {

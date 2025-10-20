@@ -35,9 +35,32 @@ export class Versus extends Scene {
     .setOrigin(0.5);
 }
 
+actualizarBarraVidaCamion(vidas, vidasMax) {
+  const barWidth = 300;
+  const porcentaje = Phaser.Math.Clamp(vidas / vidasMax, 0, 1);
+  this.barraVida.width = barWidth * porcentaje;
+}
+
+
   create() {
     // Fondo
     this.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
+
+          this.anims.create({
+  key: 'pedalear',
+  frames: this.anims.generateFrameNumbers('bici', { start: 0, end: 1 }), // depende de cuántos frames tengas
+  frameRate: 10,
+  repeat: -1
+});
+
+    this.anims.create({
+      key: 'GomeraParpadeo',
+      frames: this.anims.generateFrameNumbers('gomera', { start: 0, end: 1 }),
+      frameRate: 10,
+      repeat: -1
+    });    
+
+
 
     // Sistema de input
     this.inputSystem = new InputSystem(this.input);
@@ -82,11 +105,12 @@ export class Versus extends Scene {
     // Jugador 1 (bici)
     this.player1 = new PlayerBike(this, this.lanes[2], offsetY + 700, this.lanes);
 
-    // Crear UI de slots antes del camión
-    this.slotText = this.add.text(960, 32, '', { fontSize: '24px', fill: '#000' }).setOrigin(0.5);
-
     // Jugador 2 (camión)
     this.player2 = new PlayerCamionVersus(this, this.lanes[2], offsetY -10 , this.lanes);
+
+    this.camion = this.player2;
+    this.camionLane = this.player2.currentLane;
+
 
     // Grupos de obstáculos
     this.poolCajas = this.physics.add.group({ classType: Caja, maxSize: 20, runChildUpdate: true });
@@ -122,14 +146,11 @@ export class Versus extends Scene {
     if (this.player1) this.player1.update();         // Jugador 1: bici
     if (this.player2) this.player2.update();         // Jugador 2: camión
     this.fondoCiudad.tilePositionY -= 10;
+
+    this.camionLane = this.player2.currentLane;
+
   }
 
-  updateSlotUI(selected, slots) {
-    const str = slots.map((s, i) =>
-      (i === selected ? `[${s ? s.tipo.name.toUpperCase() : '-'}]` : `${s ? s.tipo.name.toUpperCase() : '-'}`)
-    ).join(' ');
-    if (this.slotText) this.slotText.setText(`Slots: ${str}`);
-  }
 
 spawnObstaculo(Tipo, x, y) {
   let pool;
@@ -144,8 +165,19 @@ spawnObstaculo(Tipo, x, y) {
     return;
   }
 
-  const obj = pool.get(x, y);
-  if (obj) obj.reset(x, y);
+  // --- Corrección para tomates en bordes ---
+  let spawnX = x;
+  const laneIndex = this.lanes.indexOf(x);
+
+  if (Tipo === Tomate) {
+    // si está en el primer lane, empuja un poco a la derecha
+    if (laneIndex === 0) spawnX = this.lanes[1];
+    // si está en el último lane, empuja un poco a la izquierda
+    else if (laneIndex === this.lanes.length - 1) spawnX = this.lanes[this.lanes.length - 2];
+  }
+
+  const obj = pool.get(spawnX, y);
+  if (obj) obj.reset(spawnX, y);
 }
 
   scheduleNextGomera() {
