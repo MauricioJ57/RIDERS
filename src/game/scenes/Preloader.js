@@ -53,10 +53,6 @@ export class Preloader extends Scene
         this.load.image('dos corazones', 'dos corazones.png');
         this.load.image('un corazon', 'un corazon.png');
         this.load.image('sin-corazones', 'corazones(fila vacia).png');
-        this.load.image('tomates_icon', 'tomates_icon.png');
-        this.load.image('bananas_icon', 'bananas_icon.png');
-        this.load.image('caja_icon', 'caja_icon.png');
-
     }
 
     create ()
