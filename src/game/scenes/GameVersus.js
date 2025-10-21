@@ -129,26 +129,30 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
   // --- INTRO: mostrar solo player + fondo durante 3s ---
   this.introRunning = true;
 
-  // texto de tutorial
+  // --- TEXTO DE TUTORIAL ---
+
   this.textoIntroduccion = this.add.text(960, 100, 'COMO JUGAR', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
   this.textoIntroduccion2 = this.add.text(960, 200, 'Recoge la gomera para poder disparar', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
   this.textoIntroduccion3 = this.add.text(960, 250, 'y destruye el camion', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
 
   // imagenes de tutorial
 
-  // jugador 1
+  // --- JUGADOR 1 ---
+
   this.jugador1Texto = this.add.text(500, 440, 'JUGADOR 1', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
   this.chicos = this.add.image(500, 540, 'dos chicos').setOrigin(0.5,0).setDepth(3);
-  this.controlVerde = this.add.image(500, 700, 'control verde').setOrigin(0.5,0).setDepth(3);
+  this.controlVerde = this.add.image(500, 700, 'control rojo').setOrigin(0.5,0).setDepth(3);
   this.accionesJugadorV = this.add.text(500, 800, 'LUCHA CONTRA EL CAMION', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
 
-  // jugador 2
+  // --- JUGADOR 2 ---
+
   this.jugador2Texto = this.add.text(960, 440, 'JUGADOR 2', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
   this.camionImagen = this.add.image(960, 540, 'camion').setOrigin(0.5,0).setDepth(3);
-  this.controlCamion = this.add.image(960, 840, 'control rojo').setOrigin(0.5,0).setDepth(3);
+  this.controlCamion = this.add.image(960, 840, 'control verde').setOrigin(0.5,0).setDepth(3);
   this.accionesJugadorC = this.add.text(960, 940, 'LANZA OBSTACULOS', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
 
-  // imagenes de obstaculos
+  // --- IMAGENES DE OBSTACULOS ---
+
   this.cajaImagen = this.add.image(1400, 440, 'caja_icon').setOrigin(0.5,0).setDepth(3);
   this.textoCaja = this.add.text(1550, 450, '¡ESQUIVA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
 
@@ -158,12 +162,14 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
   this.tomateImagen = this.add.image(1400, 640, 'tomates_icon').setOrigin(0.5,0).setDepth(3);
   this.textoTomate = this.add.text(1550, 650, '¡SALTA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
 
-  // imagen inicial de tutorial
+  // --- IMAGEN INICIAL DE TUTORIAL ---
+
   this.tutorial = this.add.rectangle(960, 540, 1700, 1000, 0x000000).setAlpha(0.9).setDepth(2);
 
   this.fondoTransparente = this.add.rectangle(960, 540, 2000, 1200, 0x000000).setAlpha(0.5).setDepth(1);
 
-  // Evento que actualiza la cuenta atrás cada segundo
+  // --- TIEMPO NECESARIO PARA QUE TERMINE EL TUTORIAL ---
+
   this.countdownEvent = this.time.addEvent({
     delay: 1000,
     repeat: this.countdownValue - 1,

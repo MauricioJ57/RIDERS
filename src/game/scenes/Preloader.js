@@ -56,8 +56,8 @@ export class Preloader extends Scene
         this.load.image('caja_icon', 'caja_icon.png');
         this.load.image('bananas_icon', 'bananas_icon.png');
         this.load.image('tomates_icon', 'tomates_icon.png');
-        this.load.image('chico_rojo', 'chico rojo.png');
-        this.load.image('chico_verde', 'chico verde.png');
+        this.load.image('chico_rojo_tutorial', 'chico rojo contorno.png');
+        this.load.image('chico_verde_tutorial', 'chico verde contorno.png');
         this.load.image('control rojo', 'control boton abajo R.png');
         this.load.image('control verde', 'control boton abajo V.png');
         this.load.image('dos chicos', 'dos chicos.png');
