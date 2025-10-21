@@ -1,6 +1,7 @@
 // MainMenu.js
 import { Scene } from 'phaser';
 import InputSystem, { INPUT_ACTIONS } from '../systems/InputSystem.js';
+import { crearFondoTriple } from '../utils/crearFondoTriple.js';
 
 export class MainMenu extends Scene {
   constructor() {
@@ -9,10 +10,15 @@ export class MainMenu extends Scene {
 
   create() {
     // === Fondo ===
-    this.fondoCiudad = this.add
+    /*this.fondoCiudad = this.add
       .tileSprite(0, 0, 2048, 1080, 'ciudad')
       .setOrigin(0)
-      .setScrollFactor(0);
+      .setScrollFactor(0); */
+       this.fondo = crearFondoTriple(this, {
+      xCalle: this.scale.width / 2 -50, // mover la calle fácilmente
+      anchoCalle: 1028,
+      velocidad: 8
+    });
 
     this.add.image(960, 250, 'logo').setOrigin(0.5).setScale(0.7);
 
@@ -284,7 +290,9 @@ export class MainMenu extends Scene {
   }
 
   update() {
-    if (this.fondoCiudad) this.fondoCiudad.tilePositionY -= 10;
+    //if (this.fondoCiudad) this.fondoCiudad.tilePositionY -= 10;
+  this.fondo.update();
+
     const input = this.inputSystem;
     if (!input) return;
 

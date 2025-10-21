@@ -3,6 +3,8 @@ import InputSystem, { INPUT_ACTIONS } from '../systems/InputSystem.js';
 import PlayerBike from '../clases/PlayerBike.js';
 import PlayerCamionVersus from '../clases/PlayerCamionVersus.js';
 import { Caja, Tomate, Banana, PickupGomera } from '../clases/obstaculos.js';
+import { crearFondoTriple } from '../utils/crearFondoTriple.js';
+
 
 
 // ==========================
@@ -45,7 +47,13 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
 
   create() {
     // Fondo
-    this.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
+    //his.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
+       this.fondo = crearFondoTriple(this, {
+      xCalle: this.scale.width / 2 -50, // mover la calle fácilmente
+      anchoCalle: 1028,
+      velocidad: 8
+    });
+
 
           this.anims.create({
   key: 'pedalear',
@@ -106,13 +114,13 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
       this.lanes.push(offsetX + marginX + laneWidth / 2 + i * laneWidth);
     }
 
-      // líneas divisorias
+      /* líneas divisorias
   for (let i = 1; i < laneCount; i++) {
     const lineX = offsetX + marginX + i * laneWidth;
     this.add.rectangle(lineX, offsetY + gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
-  }
+  } */
 
-  // fondo de la calle
+  /* fondo de la calle
   this.add.rectangle(
     offsetX + gameWidth / 2,
     offsetY + gameHeight / 2,
@@ -120,7 +128,7 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     gameHeight,
     0x444444,
     0.3
-  ).setDepth(-1);
+  ).setDepth(-1); */
 
 
 
@@ -234,7 +242,8 @@ const textoP2 = this.add.text(baseX2 - 80, baseY2 + 140,
     if (this.player1) this.player1.update();         // Jugador 1: bici
     if (this.player2) this.player2.update();         // Jugador 2: camión
 
-    this.fondoCiudad.tilePositionY -= 10;
+    //this.fondoCiudad.tilePositionY -= 10;
+  this.fondo.update();
 
 
     this.camionLane = this.player2.currentLane;

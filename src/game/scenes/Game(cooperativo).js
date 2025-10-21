@@ -3,6 +3,8 @@ import InputSystem, { INPUT_ACTIONS } from '../systems/InputSystem.js';
 import StateMachine from '../clases/StateMachine.js';
 import { Caja, Tomate, Banana, PickupGomera } from '../clases/obstaculos.js';
 import PlayerBike from '../clases/PlayerBike.js';
+import { crearFondoTriple } from '../utils/crearFondoTriple.js';
+
 
 // ESCENA PRINCIPAL
 export class Game extends Scene {
@@ -59,7 +61,12 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     // --- CONDICION DE GAME OVER ---
     this.gameOver = false;
 
-    this.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
+    //this.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
+       this.fondo = crearFondoTriple(this, {
+      xCalle: this.scale.width / 2 -50, // mover la calle fácilmente
+      anchoCalle: 1028,
+      velocidad: 8
+    });
 
 
     // --- PUNTUACION ---
@@ -138,7 +145,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
     this.lanes.push(offsetX + marginX + laneWidth / 2 + i * laneWidth);
   }
 
-  // líneas divisorias
+  /* líneas divisorias
   for (let i = 1; i < laneCount; i++) {
     const lineX = offsetX + marginX + i * laneWidth;
     this.add.rectangle(lineX, offsetY + gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
@@ -152,7 +159,7 @@ this.cameras.main.setBackgroundColor(0x00ff00);
     gameHeight,
     0x444444,
     0.3
-  ).setDepth(-1);
+  ).setDepth(-1); */
 
   // PLAYER
   this.player = new PlayerBike(this, this.lanes[2], offsetY + 700, this.lanes);
@@ -531,8 +538,9 @@ exit: () => { this.patron = null; }
     //this.inputSystem.update(); // refresca InputSystem
     this.player.update();
     this.camionFSM.step();
+  this.fondo.update();
 
-    this.fondoCiudad.tilePositionY -= 10;
+    //this.fondoCiudad.tilePositionY -= 10;
 
   }
 
