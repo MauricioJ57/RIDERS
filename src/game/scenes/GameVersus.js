@@ -130,20 +130,38 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
   this.introRunning = true;
 
   // texto de tutorial
-  this.textoIntroduccion = this.add.text(960, 100, 'COMO JUGAR', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.textoIntroduccion = this.add.text(960, 100, 'COMO JUGAR', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.textoIntroduccion2 = this.add.text(960, 200, 'Recoge la gomera para poder disparar', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.textoIntroduccion3 = this.add.text(960, 250, 'y destruye el camion', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  // imagenes de tutorial
+
+  // jugador 1
+  this.jugador1Texto = this.add.text(500, 440, 'JUGADOR 1', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.chicos = this.add.image(500, 540, 'dos chicos').setOrigin(0.5,0).setDepth(3);
+  this.controlVerde = this.add.image(500, 700, 'control verde').setOrigin(0.5,0).setDepth(3);
+  this.accionesJugadorV = this.add.text(500, 800, 'LUCHA CONTRA EL CAMION', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  // jugador 2
+  this.jugador2Texto = this.add.text(960, 440, 'JUGADOR 2', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.camionImagen = this.add.image(960, 540, 'camion').setOrigin(0.5,0).setDepth(3);
+  this.controlCamion = this.add.image(960, 840, 'control rojo').setOrigin(0.5,0).setDepth(3);
+  this.accionesJugadorC = this.add.text(960, 940, 'LANZA OBSTACULOS', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  // imagenes de obstaculos
+  this.cajaImagen = this.add.image(1400, 440, 'caja_icon').setOrigin(0.5,0).setDepth(3);
+  this.textoCaja = this.add.text(1550, 450, '¡ESQUIVA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  this.bananaImagen = this.add.image(1400, 540, 'bananas_icon').setOrigin(0.5,0).setDepth(3);
+  this.textoBanana = this.add.text(1550, 550, '¡ESQUIVA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  this.tomateImagen = this.add.image(1400, 640, 'tomates_icon').setOrigin(0.5,0).setDepth(3);
+  this.textoTomate = this.add.text(1550, 650, '¡SALTA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
 
   // imagen inicial de tutorial
   this.tutorial = this.add.rectangle(960, 540, 1700, 1000, 0x000000).setAlpha(0.9).setDepth(2);
 
   this.fondoTransparente = this.add.rectangle(960, 540, 2000, 1200, 0x000000).setAlpha(0.5).setDepth(1);
-
-  // Texto de cuenta atrás
-  this.countdownValue = 10;
-  this.countdownText = this.add.text(this.sys.game.config.width/2, this.sys.game.config.height/2, String(this.countdownValue), {
-    fontFamily: 'Arial',
-    fontSize: '96px',
-    color: '#ffffff'
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(10);
 
   // Evento que actualiza la cuenta atrás cada segundo
   this.countdownEvent = this.time.addEvent({
@@ -151,9 +169,6 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     repeat: this.countdownValue - 1,
     callback: () => {
       this.countdownValue -= 1;
-      if (this.countdownValue > 0) {
-        this.countdownText.setText(String(this.countdownValue));
-      }
     }
   });
 
@@ -186,11 +201,14 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
   update() {
     if (this.player1) this.player1.update();         // Jugador 1: bici
     if (this.player2) this.player2.update();         // Jugador 2: camión
-    this.fondoCiudad.tilePositionY -= 10;
     
     if (this.introRunning) {
       // Durante la intro no ejecutamos la lógica de juego
       return;
+    }
+
+    if (this.fondoCiudad) {
+      this.fondoCiudad.tilePositionY -= 10; // ESTO AJUSTA LA VELOCIDAD DEL FONDO
     }
 
     this.camionLane = this.player2.currentLane;
@@ -250,6 +268,23 @@ spawnObstaculo(Tipo, x, y) {
       this.tutorial.setVisible(false)
       this.fondoCiudad.setAlpha(1);
       this.fondoTransparente.setVisible(false);
+      this.chicos.setVisible(false);
+      this.controlVerde.setVisible(false);
+      this.accionesJugadorV.setVisible(false);
+      this.camionImagen.setVisible(false);
+      this.controlCamion.setVisible(false);
+      this.accionesJugadorC.setVisible(false);
+      this.cajaImagen.setVisible(false);
+      this.textoCaja.setVisible(false);
+      this.bananaImagen.setVisible(false);
+      this.textoBanana.setVisible(false);
+      this.tomateImagen.setVisible(false);
+      this.textoTomate.setVisible(false);
+      this.textoIntroduccion.setVisible(false);
+      this.textoIntroduccion2.setVisible(false);
+      this.textoIntroduccion3.setVisible(false);
+      this.jugador1Texto.setVisible(false);
+      this.jugador2Texto.setVisible(false);
     }
     if (this.countdownEvent) {
       this.countdownEvent.remove(false);
