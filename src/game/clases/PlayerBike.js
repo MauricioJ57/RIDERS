@@ -46,19 +46,19 @@ const posY = scene.scale.height - 80;  // un poco arriba del borde inferior
 this.vidasVisiblesLlenas = scene.add.image(centerX, posY, 'corazones-llenos')
   .setOrigin(0.5, 0.5)
   .setScrollFactor(0)
-  .setDepth(100);
+  .setDepth(1);
 
 this.vidasVisibles2 = scene.add.image(centerX, posY, 'dos corazones')
   .setOrigin(0.5, 0.5)
   .setScrollFactor(0)
   .setVisible(false)
-  .setDepth(100);
+  .setDepth(1);
 
 this.vidasVisibles1 = scene.add.image(centerX, posY, 'un corazon')
   .setOrigin(0.5, 0.5)
   .setScrollFactor(0)
   .setVisible(false)
-  .setDepth(100);
+  .setDepth(1);
 
     // efecto de camara
     this.shakeCamera = this.scene.cameras.add(0, 0, this.scene.sys.game.config.width, this.scene.sys.game.config.height).setScroll(0, 0);

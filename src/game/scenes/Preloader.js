@@ -58,6 +58,8 @@ export class Preloader extends Scene
         this.load.image('tomates_icon', 'tomates_icon.png');
         this.load.image('chico_rojo', 'chico rojo.png');
         this.load.image('chico_verde', 'chico verde.png');
+        this.load.image('control rojo', 'control boton abajo R.png');
+        this.load.image('control verde', 'control boton abajo V.png');
 
         this.load.spritesheet('bicigomera', 'bicigomera.png', { frameWidth: 64, frameHeight: 128 });
 

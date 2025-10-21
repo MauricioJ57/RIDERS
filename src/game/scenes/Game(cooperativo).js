@@ -171,12 +171,35 @@ this.tweens.add({
   this.introRunning = true;
   
   // Ocultar elementos que no deben mostrarse en la intro
-  this.camion.setVisible(false);
-  this.textoVidasCamion.setVisible(false);
-  this.textoPuntuacion.setVisible(false);
 
   // texto de tutorial
-  this.textoIntroduccion = this.add.text(960, 100, 'COMO JUGAR', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.textoIntroduccion = this.add.text(960, 100, 'COMO JUGAR', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.textoIntroduccion2 = this.add.text(960, 200, 'Recoge la gomera para poder disparar', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.textoIntroduccion3 = this.add.text(960, 250, 'y destruye el camion', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  // imagenes de tutorial
+
+  // jugador 1
+  this.jugador1Texto = this.add.text(500, 440, 'JUGADOR 1', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.chicoVerde = this.add.image(500, 540, 'chico_verde').setOrigin(0.5,0).setDepth(3);
+  this.controlVerde = this.add.image(500, 700, 'control verde').setOrigin(0.5,0).setDepth(3);
+  this.accionesJugadorV = this.add.text(500, 800, 'APUNTAR Y SALTAR', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  // jugador 2
+  this.jugador2Texto = this.add.text(960, 440, 'JUGADOR 2', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.chicoRojo = this.add.image(960, 540, 'chico_rojo').setOrigin(0.5,0).setDepth(3);
+  this.controlRojo = this.add.image(960, 700, 'control rojo').setOrigin(0.5,0).setDepth(3);
+  this.accionesJugadorR = this.add.text(960, 800, 'MOVERSE Y DISPARAR', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  // imagenes de obstaculos
+  this.cajaImagen = this.add.image(1400, 440, 'caja_icon').setOrigin(0.5,0).setDepth(3);
+  this.textoCaja = this.add.text(1550, 450, '¡ESQUIVA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  this.bananaImagen = this.add.image(1400, 540, 'bananas_icon').setOrigin(0.5,0).setDepth(3);
+  this.textoBanana = this.add.text(1550, 550, '¡ESQUIVA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+
+  this.tomateImagen = this.add.image(1400, 640, 'tomates_icon').setOrigin(0.5,0).setDepth(3);
+  this.textoTomate = this.add.text(1550, 650, '¡SALTA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
 
   // imagen inicial de tutorial
   this.tutorial = this.add.rectangle(960, 540, 1700, 1000, 0x000000).setAlpha(0.9).setDepth(2);
@@ -185,11 +208,6 @@ this.tweens.add({
 
   // Texto de cuenta atrás
   this.countdownValue = 10;
-  this.countdownText = this.add.text(this.sys.game.config.width/2, this.sys.game.config.height/2, String(this.countdownValue), {
-    fontFamily: 'Arial',
-    fontSize: '96px',
-    color: '#ffffff'
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(10);
 
   // Evento que actualiza la cuenta atrás cada segundo
   this.countdownEvent = this.time.addEvent({
@@ -197,9 +215,6 @@ this.tweens.add({
     repeat: this.countdownValue - 1,
     callback: () => {
       this.countdownValue -= 1;
-      if (this.countdownValue > 0) {
-        this.countdownText.setText(String(this.countdownValue));
-      }
     }
   });
 
@@ -570,10 +585,6 @@ spawnObstaculo(Tipo, x, y) {
   // --- Finaliza la intro y arranca la jugabilidad ---
   startGameplay() {
     this.introRunning = false;
-    // Mostrar elementos ocultos
-    this.camion.setVisible(true);
-    this.textoVidasCamion.setVisible(true);
-    this.textoPuntuacion.setVisible(true);
 
     this.puntuacionPorTiempo = this.time.addEvent({
       delay: 1000,
@@ -603,6 +614,22 @@ spawnObstaculo(Tipo, x, y) {
       this.fondoCiudad.setAlpha(1);
       this.textoIntroduccion.setVisible(false);
       this.fondoTransparente.setVisible(false);
+      this.textoIntroduccion2.setVisible(false);
+      this.textoIntroduccion3.setVisible(false);
+      this.chicoVerde.setVisible(false);
+      this.controlVerde.setVisible(false);
+      this.accionesJugadorV.setVisible(false);
+      this.jugador1Texto.setVisible(false);
+      this.chicoRojo.setVisible(false);
+      this.controlRojo.setVisible(false);
+      this.accionesJugadorR.setVisible(false);
+      this.jugador2Texto.setVisible(false);
+      this.cajaImagen.setVisible(false);
+      this.textoCaja.setVisible(false);
+      this.bananaImagen.setVisible(false);
+      this.textoBanana.setVisible(false);
+      this.tomateImagen.setVisible(false);
+      this.textoTomate.setVisible(false);
     }
     if (this.countdownEvent) {
       this.countdownEvent.remove(false);
