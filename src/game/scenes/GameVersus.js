@@ -4,6 +4,7 @@ import PlayerBike from '../clases/PlayerBike.js';
 import PlayerCamionVersus from '../clases/PlayerCamionVersus.js';
 import { Caja, Tomate, Banana, PickupGomera } from '../clases/obstaculos.js';
 
+
 // ==========================
 // ESCENA VERSUS
 // ==========================
@@ -105,6 +106,24 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
       this.lanes.push(offsetX + marginX + laneWidth / 2 + i * laneWidth);
     }
 
+      // líneas divisorias
+  for (let i = 1; i < laneCount; i++) {
+    const lineX = offsetX + marginX + i * laneWidth;
+    this.add.rectangle(lineX, offsetY + gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
+  }
+
+  // fondo de la calle
+  this.add.rectangle(
+    offsetX + gameWidth / 2,
+    offsetY + gameHeight / 2,
+    gameWidth - marginX * 2,
+    gameHeight,
+    0x444444,
+    0.3
+  ).setDepth(-1);
+
+
+
     // Jugador 1 (bici)
     this.player1 = new PlayerBike(this, this.lanes[2], offsetY + 700, this.lanes);
 
@@ -140,7 +159,73 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     this.scheduleNextGomera();
 
    // Barra de vida del camión
-  this.crearBarraVidaCamion(8);
+  this.crearBarraVidaCamion(6);
+
+  // ======================
+// HUD JUGADOR 1 (BICI)
+// ======================
+
+const margen = 40;
+const baseY = this.scale.height - 150;
+
+// Imagen de los dos nenes juntos
+const neneHUD = this.add.image(margen + 150, baseY, 'chicos_hud')
+  .setOrigin(0.5)
+  .setScale(1.3)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Imagen de los controles del jugador 1
+const controlesP1 = this.add.image(neneHUD.x + 250, baseY, 'controlRojoAX')
+  .setOrigin(0.5)
+  .setScale(1.2)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Texto explicativo
+const textoP1 = this.add.text(neneHUD.x + 90, baseY - 150,
+  'Jugador 1 \nMoverse, Saltar y Disparar',
+  {
+    fontFamily: 'Arial Black',
+    fontSize: '28px',
+    color: '#ffffff',
+    align: 'center',
+    stroke: '#000000',
+    strokeThickness: 5
+  })
+  .setOrigin(0.5)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// ======================
+// HUD JUGADOR 2 (CAMIÓN)
+// ======================
+
+// Coordenadas base: debajo de los slots
+const baseX2 = this.scale.width - 200;
+const baseY2 = 160; // un poco debajo de los íconos de slots
+
+// Imagen de controles del camión
+const controlesP2 = this.add.image(baseX2, baseY2, 'controlVerdeAX')
+  .setOrigin(1, 0)
+  .setScale(1.2)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Texto explicativo
+const textoP2 = this.add.text(baseX2 - 80, baseY2 + 140,
+  'Jugador 2 \nMoverse, Elegir objeto y Lanzar',
+  {
+    fontFamily: 'Arial Black',
+    fontSize: '26px',
+    color: '#ffffff',
+    align: 'center',
+    stroke: '#000000',
+    strokeThickness: 5
+  })
+  .setOrigin(0.5)
+  .setScrollFactor(0)
+  .setDepth(50);
 
 
   }
@@ -148,7 +233,9 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
   update() {
     if (this.player1) this.player1.update();         // Jugador 1: bici
     if (this.player2) this.player2.update();         // Jugador 2: camión
+
     this.fondoCiudad.tilePositionY -= 10;
+
 
     this.camionLane = this.player2.currentLane;
 

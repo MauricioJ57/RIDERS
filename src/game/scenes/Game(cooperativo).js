@@ -21,15 +21,18 @@ crearBarraVidaCamion(maxVidas) {
 
   // Fondo negro
   this.barraFondo = this.add.rectangle(posX, posY, barWidth, barHeight, 0x000000).setOrigin(0.5);
+  this.barraFondo.setDepth(10);
 
   // Barra roja (vida)
   this.barraVida = this.add.rectangle(posX - barWidth / 2, posY, barWidth, barHeight, 0xff0000)
     .setOrigin(0, 0.5);
+  this.barraVida.setDepth(10);
 
   // Borde blanco
   this.barraBorde = this.add.rectangle(posX, posY, barWidth + 4, barHeight + 4)
     .setStrokeStyle(2, 0xffffff)
     .setOrigin(0.5);
+  this.barraBorde.setDepth(10);
 }
 
 actualizarBarraVidaCamion(vidas, vidasMax) {
@@ -57,6 +60,7 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     this.gameOver = false;
 
     this.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
+
 
     // --- PUNTUACION ---
     this.puntuacion = 0;
@@ -167,6 +171,75 @@ this.tweens.add({
   repeat: -1,
   ease: 'Sine.easeInOut'
 });
+
+// ======================
+// HUD DE COOPERATIVO
+// ======================
+
+// --- Jugador 1 (izquierda) ---
+const margen = 40;
+const baseY = this.scale.height - 150; // altura general
+
+// Imagen del jugador 1
+const jugador1Img = this.add.image(margen + 120, baseY, 'chicoRojoHud')
+  .setOrigin(0.5, 0.5)
+  .setScale(1.4)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Controles jugador 1 (por ejemplo WASD o flechas)
+const controles1Img = this.add.image(jugador1Img.x + 180, baseY, 'controlRojoA')
+  .setOrigin(0.5)
+  .setScale(1.2)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Texto sobre las acciones del jugador 1
+const texto1 = this.add.text(jugador1Img.x + 90, baseY - 150,
+  'Jugador 1\nMoverse y Disparar',
+  {
+    fontFamily: 'Arial Black',
+    fontSize: '28px',
+    color: '#ffffff',
+    align: 'center',
+    stroke: '#000000',
+    strokeThickness: 5
+  })
+  .setOrigin(0.5)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+
+// --- Jugador 2 (derecha) ---
+
+const jugador2Img = this.add.image(this.scale.width - (margen + 120), baseY, 'chicoVerdeHud')
+  .setOrigin(0.5, 0.5)
+  .setScale(1.4)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Controles jugador 2 (por ejemplo joystick 2 o flechas)
+const controles2Img = this.add.image(jugador2Img.x - 180, baseY, 'controlVerdeA')
+  .setOrigin(0.5)
+  .setScale(1.2)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Texto sobre las acciones del jugador 2
+const texto2 = this.add.text(jugador2Img.x - 90, baseY - 150,
+  'Jugador 2\nApunta y Salta',
+  {
+    fontFamily: 'Arial Black',
+    fontSize: '28px',
+    color: '#ffffff',
+    align: 'center',
+    stroke: '#000000',
+    strokeThickness: 5
+  })
+  .setOrigin(0.5)
+  .setScrollFactor(0)
+  .setDepth(50);
+
 
 
   
@@ -459,10 +532,8 @@ exit: () => { this.patron = null; }
     this.player.update();
     this.camionFSM.step();
 
-    // --- MOVIMIENTO DE LA CIUDAD ---
-    if (this.fondoCiudad) {
-      this.fondoCiudad.tilePositionY -= 10; // ESTO AJUSTA LA VELOCIDAD DEL FONDO
-    }
+    this.fondoCiudad.tilePositionY -= 10;
+
   }
 
   moveCamion(direction) {

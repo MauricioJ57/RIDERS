@@ -1,3 +1,4 @@
+// PlayerBike.js
 import Phaser from 'phaser';
 import { INPUT_ACTIONS } from '../systems/InputSystem.js';
 import StateMachine from '../clases/StateMachine.js';
@@ -6,22 +7,18 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, lanes) {
     super(scene, x, y, 'bici');
 
+    // Animación bici con gomera (si no existe)
     if (!scene.anims.exists('biciConGomera')) {
-  scene.anims.create({
-    key: 'biciConGomera',
-    frames: scene.anims.generateFrameNumbers('bicigomera', { start: 0, end: 1 }),
-    frameRate: 10,
-    repeat: -1
-  });
-}
-
+      scene.anims.create({
+        key: 'biciConGomera',
+        frames: scene.anims.generateFrameNumbers('bicigomera', { start: 0, end: 1 }),
+        frameRate: 10,
+        repeat: -1
+      });
+    }
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
-
-    // --- formas de acceder al gameOver (revisar) ---
-    this.ganoJugador = false;
-    this.perdioJugador = false;
 
     this.scene = scene;
     this.lanes = lanes;
@@ -30,58 +27,41 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
     this.play('pedalear');
 
-    // hitbox ajustable
     this.setSize(40, 60);
-    // this.setOffset(10, 20);
 
     // vidas e invulnerabilidad
     this.lives = 3;
     this.invulnerable = false;
 
+    // interfaz de corazones
+    const centerX = scene.scale.width / 2;
+    const posY = scene.scale.height - 80;
 
-// interfaz de corazones (centrados abajo)
-const centerX = scene.scale.width / 2; // centro horizontal de la pantalla
-const posY = scene.scale.height - 80;  // un poco arriba del borde inferior
+    this.vidasVisiblesLlenas = scene.add.image(centerX, posY, 'corazones-llenos')
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(100);
+    this.vidasVisibles2 = scene.add.image(centerX, posY, 'dos corazones')
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setVisible(false)
+      .setDepth(100);
+    this.vidasVisibles1 = scene.add.image(centerX, posY, 'un corazon')
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setVisible(false)
+      .setDepth(100);
 
-this.vidasVisiblesLlenas = scene.add.image(centerX, posY, 'corazones-llenos')
-  .setOrigin(0.5, 0.5)
-  .setScrollFactor(0)
-  .setDepth(100);
-
-this.vidasVisibles2 = scene.add.image(centerX, posY, 'dos corazones')
-  .setOrigin(0.5, 0.5)
-  .setScrollFactor(0)
-  .setVisible(false)
-  .setDepth(100);
-
-this.vidasVisibles1 = scene.add.image(centerX, posY, 'un corazon')
-  .setOrigin(0.5, 0.5)
-  .setScrollFactor(0)
-  .setVisible(false)
-  .setDepth(100);
-
-    // efecto de camara
     this.shakeCamera = this.scene.cameras.add(0, 0, this.scene.sys.game.config.width, this.scene.sys.game.config.height).setScroll(0, 0);
-
-    //interfaz de jugadores
-    this.hudJugadorMovimiento = scene.add.image(200, 1000, 'jugadorMovimientoDisparo').setScrollFactor(0).setDepth(1);
-    this.hudJugadorMira = scene.add.image(1800, 1000, 'jugadorSaltoMira').setScrollFactor(0).setDepth(1);
-
-    this.HudControlDisparo = scene.add.image(400, 1000, 'controlDisparo').setScrollFactor(0).setDepth(1);
-    this.HudControlMira = scene.add.image(1600, 1000, 'controlMira').setScrollFactor(0).setDepth(1);
-
-    // figuras genericas (remplazar mas tarde por consumo de recursos)
-    this.marcoHudMovimiento2 = scene.add.rectangle(200, 980, 220, 170, 0xff0000ff, 1);
-    this.marcoHudMovimiento1 = scene.add.rectangle(200, 980, 200, 150, 0xffffff, 1);
-    
-    this.marcoHudMira2 = scene.add.rectangle(1800, 980, 220, 170, 0xff0000ff, 1);
-    this.marcoHudMira1 = scene.add.rectangle(1800, 980, 200, 150, 0xffffff, 1);
 
     // gomera
     this.hasGomera = false;
     this.mira = scene.add.sprite(this.x, this.y - 200, 'mira').setDepth(1).setVisible(false);
 
-    // FSM (salto y normal)
+    this.estaSaltando = false;
+    this.jumpTween = null;
+
+    // FSM
     this.FSM = new StateMachine('normal', {
       normal: {},
       jumping: {
@@ -96,51 +76,61 @@ this.vidasVisibles1 = scene.add.image(centerX, posY, 'un corazon')
 
   update() {
     this.FSM.step();
-
     const input = this.scene.inputSystem;
+    if (!input) return;
 
-    // movimiento lateral
+    // movimiento
     if (input.isJustPressed(INPUT_ACTIONS.LEFT, "player1")) this.move(-1);
     if (input.isJustPressed(INPUT_ACTIONS.RIGHT, "player1")) this.move(1);
 
-// salto
-const jumperId = (this.scene.scene.key === 'Versus') ? "player1" : "player2";
+    // salto
+    const esVersus = (this.scene.scene.key === 'Versus');
+    const jumperId = esVersus ? "player1" : "player2";
+    const botonSalto = esVersus ? INPUT_ACTIONS.SOUTH : INPUT_ACTIONS.WEST;
 
-if (input.isJustPressed(INPUT_ACTIONS.WEST, "player1") && this.FSM.state === 'normal') {
-  // Si es el modo Versus, el salto dura menos tiempo
-  const esVersus = this.scene.scene.key === 'Versus';
-  const duracionSalto = esVersus ? 700 : 1000;   // duración total del estado de salto
-  const duracionTween = esVersus ? 350 : 500;    // duración del "sube y baja"
+    if (input.isJustPressed(botonSalto, jumperId) && this.FSM.state === 'normal' && !this.estaSaltando) {
+      this.estaSaltando = true;
+      const duracionSalto = esVersus ? 700 : 1000;
+      const duracionTween = esVersus ? 350 : 500;
 
-  this.FSM.transition('jumping', { duration: duracionSalto });
-  this.setDepth(1);
+      this.FSM.transition('jumping', { duration: duracionSalto });
+      this.setDepth(1);
 
-  this.scene.tweens.add({
-    targets: this,
-    scale: 1.5,
-    duration: duracionTween,
-    ease: 'Quad.easeOut',
-    yoyo: true,
-    hold: 80,
-    onComplete: () => {
-      this.setDepth(0);
-      this.FSM.transition('normal');
+      if (this.jumpTween) {
+        this.jumpTween.remove();
+        this.jumpTween = null;
+        this.setScale(1);
+      }
+
+      this.jumpTween = this.scene.tweens.add({
+        targets: this,
+        scale: 1.5,
+        duration: duracionTween,
+        ease: 'Quad.easeOut',
+        yoyo: true,
+        hold: 80,
+        onComplete: () => {
+          this.setDepth(0);
+          this.FSM.transition('normal');
+          this.estaSaltando = false;
+          this.jumpTween = null;
+        }
+      });
     }
-  });
-}
 
+    // gomera
     if (this.hasGomera) {
-      // Si estamos en Versus, la mira se mantiene fija delante de la bici
-      if (this.scene.scene.key === 'Versus') {
+      if (esVersus) {
         this.mira.x = this.x;
         this.mira.y = this.y - 150;
       } else {
-        // En cooperativo sigue siendo controlable
         this.handleMiraMovement();
       }
 
-      // Disparo (en ambos modos)
-      if (this.scene.inputSystem.isJustPressed(INPUT_ACTIONS.WEST, "player1")) {
+      const shooterId = "player1";
+      const botonDisparo = esVersus ? INPUT_ACTIONS.WEST : INPUT_ACTIONS.SOUTH;
+
+      if (this.scene.inputSystem.isJustPressed(botonDisparo, shooterId)) {
         this.fireGomera();
       }
     }
@@ -157,6 +147,7 @@ if (input.isJustPressed(INPUT_ACTIONS.WEST, "player1") && this.FSM.state === 'no
   handleMiraMovement() {
     const speed = 5;
     const input = this.scene.inputSystem;
+    if (!input) return;
 
     if (input.isPressed(INPUT_ACTIONS.LEFT, "player2")) this.mira.x -= speed;
     if (input.isPressed(INPUT_ACTIONS.RIGHT, "player2")) this.mira.x += speed;
@@ -168,42 +159,50 @@ if (input.isJustPressed(INPUT_ACTIONS.WEST, "player1") && this.FSM.state === 'no
     this.mira.y = Phaser.Math.Clamp(this.mira.y, 0, height);
   }
 
-fireGomera() {
-  const camion = this.scene.camion;
-  if (!camion) return;
+  fireGomera() {
+    const camion = this.scene.camion;
+    if (!camion) return;
 
-  const bounds = camion.getBounds();
+    const bounds = camion.getBounds();
+    const acierta =
+      (this.mira.visible && Phaser.Geom.Rectangle.Contains(bounds, this.mira.x, this.mira.y)) ||
+      this.currentLane === this.scene.camionLane;
 
-  // Golpea si la mira está sobre el camión o en el mismo lane
-  const acierta =
-    (this.mira.visible && Phaser.Geom.Rectangle.Contains(bounds, this.mira.x, this.mira.y)) ||
-    this.currentLane === this.scene.camionLane;
+    if (acierta) {
+      camion.setTint(0xff0000);
+      this.scene.time.delayedCall(500, () => camion.clearTint());
 
-  if (acierta) {
-    camion.setTint(0xff0000);
-    this.scene.time.delayedCall(500, () => camion.clearTint());
+      this.scene.vidasCamion -= 1;
+      if (this.scene.vidasCamion < 0) this.scene.vidasCamion = 0;
 
-    // Reducir vida del camión
-    this.scene.vidasCamion -= 1;
-    if (this.scene.vidasCamion < 0) this.scene.vidasCamion = 0;
+      if (this.scene.actualizarBarraVidaCamion)
+        this.scene.actualizarBarraVidaCamion(this.scene.vidasCamion, this.scene.vidasCamionMax);
 
-    // Actualizar barra visual
-    if (this.scene.actualizarBarraVidaCamion) {
-      this.scene.actualizarBarraVidaCamion(this.scene.vidasCamion, this.scene.vidasCamionMax);
+      // --- Victoria ---
+      if (this.scene.vidasCamion <= 0 && !this.scene.gameOver) {
+        this.scene.gameOver = true;
+        const modo = (this.scene.scene.key === 'Versus') ? 'Versus' : 'Cooperativo';
+        let payload;
+
+        if (modo === 'Cooperativo') {
+          payload = { modo, resultado: 'victoria', ganador: 'equipo' };
+        } else {
+          payload = { modo, resultado: 'victoria', ganador: 'bici' };
+        }
+
+        // ✅ Añadir puntuación si existe
+        if (this.scene.puntuacion !== undefined) {
+          payload.puntaje = this.scene.puntuacion;
+        }
+
+        this.scene.scene.start('GameOver', payload);
+      }
     }
 
-    // Verificar destrucción
-    if (this.scene.vidasCamion <= 0) {
-      console.log("¡Camión destruido!");
-      this.scene.scene.start('GameOver');
-    }
+    this.hasGomera = false;
+    this.mira.setVisible(false);
+    this.play('pedalear');
   }
-
-  // Termina el uso de la gomera
-  this.hasGomera = false;
-  this.mira.setVisible(false);
-  this.play('pedalear');
-}
 
   giveGomera() {
     if (!this.hasGomera) {
@@ -214,7 +213,6 @@ fireGomera() {
     } else {
       this.mira.setVisible(true);
     }
-
     this.play('biciConGomera');
   }
 
@@ -227,7 +225,6 @@ fireGomera() {
       if (this.currentLane === 0) dir = 1;
       else if (this.currentLane === this.lanes.length - 1) dir = -1;
       else dir = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
-
       this.currentLane += dir;
       this.x = this.lanes[this.currentLane];
       return;
@@ -246,9 +243,23 @@ fireGomera() {
     } else if (this.lives === 1) {
       this.vidasVisibles2.setVisible(false);
       this.vidasVisibles1.setVisible(true);
-    } else if (this.lives <= 0) {
-      this.scene.perdioJugador = true;
-      this.scene.scene.start('GameOver');
+    } else if (this.lives <= 0 && !this.scene.gameOver) {
+      this.scene.gameOver = true;
+
+      const modo = (this.scene.scene.key === 'Versus') ? 'Versus' : 'Cooperativo';
+      let payload;
+      if (modo === 'Cooperativo') {
+        payload = { modo, resultado: 'derrota', ganador: 'ninguno' };
+      } else {
+        payload = { modo, resultado: 'derrota', ganador: 'camion' };
+      }
+
+      // ✅ Agregar puntaje si existe
+      if (this.scene.puntuacion !== undefined) {
+        payload.puntaje = this.scene.puntuacion;
+      }
+
+      this.scene.scene.start('GameOver', payload);
       return;
     }
 
