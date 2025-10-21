@@ -14,7 +14,7 @@ export class MainMenu extends Scene {
       .setOrigin(0)
       .setScrollFactor(0);
 
-    this.add.image(960, 300, 'logo').setOrigin(0.5);
+    this.add.image(960, 250, 'logo').setOrigin(0.5).setScale(0.7);
 
     // === Input ===
     this.inputSystem = new InputSystem(this.input);
