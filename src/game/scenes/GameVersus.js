@@ -48,6 +48,10 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
   create() {
     // Fondo
     //his.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
+
+    this.gameOver = false; // 🔧 evita que quede en true de la partida anterior
+
+
        this.fondo = crearFondoTriple(this, {
       xCalle: this.scale.width / 2 -50, // mover la calle fácilmente
       anchoCalle: 1028,

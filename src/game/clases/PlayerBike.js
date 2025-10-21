@@ -7,6 +7,12 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, lanes) {
     super(scene, x, y, 'bici');
 
+    // Asegurarse de que no quede estado viejo
+    this.lives = 3;
+    this.invulnerable = false;
+    this.danoTween = null;
+    this.setAlpha(1);
+
     // Animación bici con gomera (si no existe)
     if (!scene.anims.exists('biciConGomera')) {
       scene.anims.create({
@@ -29,11 +35,7 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
 
     this.setSize(40, 60);
 
-    // vidas e invulnerabilidad
-    this.lives = 3;
-    this.invulnerable = false;
-
-    // interfaz de corazones
+    // HUD de vidas
     const centerX = scene.scale.width / 2;
     const posY = scene.scale.height - 80;
 
@@ -41,18 +43,22 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(100);
+
     this.vidasVisibles2 = scene.add.image(centerX, posY, 'dos corazones')
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setVisible(false)
       .setDepth(100);
+
     this.vidasVisibles1 = scene.add.image(centerX, posY, 'un corazon')
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setVisible(false)
       .setDepth(100);
 
-    this.shakeCamera = this.scene.cameras.add(0, 0, this.scene.sys.game.config.width, this.scene.sys.game.config.height).setScroll(0, 0);
+    this.shakeCamera = this.scene.cameras.add(
+      0, 0, this.scene.sys.game.config.width, this.scene.sys.game.config.height
+    ).setScroll(0, 0);
 
     // gomera
     this.hasGomera = false;
@@ -76,6 +82,7 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
 
   update() {
     this.FSM.step();
+
     const input = this.scene.inputSystem;
     if (!input) return;
 
@@ -190,10 +197,7 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
           payload = { modo, resultado: 'victoria', ganador: 'bici' };
         }
 
-        // ✅ Añadir puntuación si existe
-        if (this.scene.puntuacion !== undefined) {
-          payload.puntaje = this.scene.puntuacion;
-        }
+        if (this.scene.puntuacion !== undefined) payload.puntaje = this.scene.puntuacion;
 
         this.scene.scene.start('GameOver', payload);
       }
@@ -235,56 +239,76 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-perderVida() {
-  this.lives--;
+  perderVida() {
+    this.lives--;
 
-  if (this.lives === 2) {
-    this.vidasVisiblesLlenas.setVisible(false);
-    this.vidasVisibles2.setVisible(true);
-  } else if (this.lives === 1) {
-    this.vidasVisibles2.setVisible(false);
-    this.vidasVisibles1.setVisible(true);
-  } else if (this.lives <= 0 && !this.scene.gameOver) {
-    this.scene.gameOver = true;
-    const modo = (this.scene.scene.key === 'Versus') ? 'Versus' : 'Cooperativo';
-    let payload = (modo === 'Cooperativo')
-      ? { modo, resultado: 'derrota', ganador: 'ninguno' }
-      : { modo, resultado: 'derrota', ganador: 'camion' };
+    if (this.lives === 2) {
+      this.vidasVisiblesLlenas.setVisible(false);
+      this.vidasVisibles2.setVisible(true);
+    } else if (this.lives === 1) {
+      this.vidasVisibles2.setVisible(false);
+      this.vidasVisibles1.setVisible(true);
+    } else if (this.lives <= 0 && !this.scene.gameOver) {
+      this.scene.gameOver = true;
+      const modo = (this.scene.scene.key === 'Versus') ? 'Versus' : 'Cooperativo';
+      const payload = (modo === 'Cooperativo')
+        ? { modo, resultado: 'derrota', ganador: 'ninguno' }
+        : { modo, resultado: 'derrota', ganador: 'camion' };
 
-    if (this.scene.puntuacion !== undefined)
-      payload.puntaje = this.scene.puntuacion;
+console.log('💀 vidas bici:', this.lives, 'gameOver:', this.scene.gameOver);
+console.log('Modo detectado:', this.scene.scene.key);
+console.log('Payload:', payload);
 
-    this.scene.scene.start('GameOver', payload);
-    return;
+
+      if (this.scene.puntuacion !== undefined) payload.puntaje = this.scene.puntuacion;
+      this.scene.scene.start('GameOver', payload);
+      return;
+    }
+
+    this.invulnerable = true;
+
+    if (this.danoTween) {
+      this.danoTween.remove();
+      this.setAlpha(1);
+    }
+
+    this.danoTween = this.scene.tweens.add({
+      targets: this,
+      alpha: 0.3,
+      yoyo: true,
+      repeat: 6,
+      duration: 200,
+      onComplete: () => {
+        this.setAlpha(1);
+        this.danoTween = null;
+      }
+    });
+
+    this.shakeCamera.shake(500, 0.001);
+
+    this.scene.time.delayedCall(2000, () => {
+      this.invulnerable = false;
+      this.setAlpha(1);
+    });
   }
 
-  // --- Efecto de daño (parpadeo seguro) ---
-  this.invulnerable = true;
-
-  // 🔸 Cancelar cualquier tween viejo antes de crear uno nuevo
-  if (this.danoTween) {
-    this.danoTween.remove();
-    this.setAlpha(1);
-  }
-
-  // 🔸 Agregar tween nuevo
-  this.danoTween = this.scene.tweens.add({
-    targets: this,
-    alpha: 0.3,
-    yoyo: true,
-    repeat: 6,
-    duration: 200,
-    onComplete: () => {
-      this.setAlpha(1); // aseguramos que termine visible
+  // 🔹 Método nuevo: limpieza completa
+  limpiarEfectos() {
+    if (this.danoTween) {
+      this.danoTween.remove();
       this.danoTween = null;
     }
-  });
-
-  this.shakeCamera.shake(500, 0.001);
-
-  this.scene.time.delayedCall(2000, () => {
+    this.setAlpha(1);
     this.invulnerable = false;
-    this.setAlpha(1); // 🔸 refuerzo final por si el tween fue interrumpido
-  });
-}
+  }
+
+  // 🔹 Destruir con limpieza
+  destroy(fromScene) {
+    this.limpiarEfectos();
+    this.mira?.destroy();
+    this.vidasVisiblesLlenas?.destroy();
+    this.vidasVisibles2?.destroy();
+    this.vidasVisibles1?.destroy();
+    super.destroy(fromScene);
+  }
 }
