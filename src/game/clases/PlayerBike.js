@@ -235,40 +235,56 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  perderVida() {
-    this.lives--;
-    if (this.lives === 2) {
-      this.vidasVisiblesLlenas.setVisible(false);
-      this.vidasVisibles2.setVisible(true);
-    } else if (this.lives === 1) {
-      this.vidasVisibles2.setVisible(false);
-      this.vidasVisibles1.setVisible(true);
-    } else if (this.lives <= 0 && !this.scene.gameOver) {
-      this.scene.gameOver = true;
+perderVida() {
+  this.lives--;
 
-      const modo = (this.scene.scene.key === 'Versus') ? 'Versus' : 'Cooperativo';
-      let payload;
-      if (modo === 'Cooperativo') {
-        payload = { modo, resultado: 'derrota', ganador: 'ninguno' };
-      } else {
-        payload = { modo, resultado: 'derrota', ganador: 'camion' };
-      }
+  if (this.lives === 2) {
+    this.vidasVisiblesLlenas.setVisible(false);
+    this.vidasVisibles2.setVisible(true);
+  } else if (this.lives === 1) {
+    this.vidasVisibles2.setVisible(false);
+    this.vidasVisibles1.setVisible(true);
+  } else if (this.lives <= 0 && !this.scene.gameOver) {
+    this.scene.gameOver = true;
+    const modo = (this.scene.scene.key === 'Versus') ? 'Versus' : 'Cooperativo';
+    let payload = (modo === 'Cooperativo')
+      ? { modo, resultado: 'derrota', ganador: 'ninguno' }
+      : { modo, resultado: 'derrota', ganador: 'camion' };
 
-      // ✅ Agregar puntaje si existe
-      if (this.scene.puntuacion !== undefined) {
-        payload.puntaje = this.scene.puntuacion;
-      }
+    if (this.scene.puntuacion !== undefined)
+      payload.puntaje = this.scene.puntuacion;
 
-      this.scene.scene.start('GameOver', payload);
-      return;
-    }
-
-    this.invulnerable = true;
-    this.shakeCamera.shake(500, 0.001);
-    this.scene.tweens.add({ targets: this, alpha: 0.3, yoyo: true, repeat: 6, duration: 200 });
-    this.scene.time.delayedCall(2000, () => {
-      this.invulnerable = false;
-      this.setAlpha(1);
-    });
+    this.scene.scene.start('GameOver', payload);
+    return;
   }
+
+  // --- Efecto de daño (parpadeo seguro) ---
+  this.invulnerable = true;
+
+  // 🔸 Cancelar cualquier tween viejo antes de crear uno nuevo
+  if (this.danoTween) {
+    this.danoTween.remove();
+    this.setAlpha(1);
+  }
+
+  // 🔸 Agregar tween nuevo
+  this.danoTween = this.scene.tweens.add({
+    targets: this,
+    alpha: 0.3,
+    yoyo: true,
+    repeat: 6,
+    duration: 200,
+    onComplete: () => {
+      this.setAlpha(1); // aseguramos que termine visible
+      this.danoTween = null;
+    }
+  });
+
+  this.shakeCamera.shake(500, 0.001);
+
+  this.scene.time.delayedCall(2000, () => {
+    this.invulnerable = false;
+    this.setAlpha(1); // 🔸 refuerzo final por si el tween fue interrumpido
+  });
+}
 }
