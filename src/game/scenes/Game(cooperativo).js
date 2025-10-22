@@ -3,6 +3,8 @@ import InputSystem, { INPUT_ACTIONS } from '../systems/InputSystem.js';
 import StateMachine from '../clases/StateMachine.js';
 import { Caja, Tomate, Banana, PickupGomera } from '../clases/obstaculos.js';
 import PlayerBike from '../clases/PlayerBike.js';
+import { crearFondoTriple } from '../utils/crearFondoTriple.js';
+
 
 // ESCENA PRINCIPAL
 export class Game extends Scene {
@@ -21,15 +23,18 @@ crearBarraVidaCamion(maxVidas) {
 
   // Fondo negro
   this.barraFondo = this.add.rectangle(posX, posY, barWidth, barHeight, 0x000000).setOrigin(0.5);
+  this.barraFondo.setDepth(10);
 
   // Barra roja (vida)
   this.barraVida = this.add.rectangle(posX - barWidth / 2, posY, barWidth, barHeight, 0xff0000)
     .setOrigin(0, 0.5);
+  this.barraVida.setDepth(10);
 
   // Borde blanco
   this.barraBorde = this.add.rectangle(posX, posY, barWidth + 4, barHeight + 4)
     .setStrokeStyle(2, 0xffffff)
     .setOrigin(0.5);
+  this.barraBorde.setDepth(10);
 }
 
 actualizarBarraVidaCamion(vidas, vidasMax) {
@@ -56,7 +61,13 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     // --- CONDICION DE GAME OVER ---
     this.gameOver = false;
 
-    this.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
+    //this.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
+       this.fondo = crearFondoTriple(this, {
+      xCalle: this.scale.width / 2 -50, // mover la calle fácilmente
+      anchoCalle: 1028,
+      velocidad: 8
+    });
+
 
     // --- PUNTUACION ---
     this.puntuacion = 0;
@@ -85,9 +96,9 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     this.inputSystem = new InputSystem(this.input);
     this.inputSystem.configureKeyboard({
       //[INPUT_ACTIONS.NORTH]: [Phaser.Input.Keyboard.KeyCodes.W],
-      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.SPACE],
+      [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.K],
       //[INPUT_ACTIONS.EAST]: [Phaser.Input.Keyboard.KeyCodes.K],
-      [INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.K],
+      //[INPUT_ACTIONS.WEST]: [Phaser.Input.Keyboard.KeyCodes.K],
       [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.UP],
       [INPUT_ACTIONS.DOWN]: [Phaser.Input.Keyboard.KeyCodes.DOWN],
       [INPUT_ACTIONS.LEFT]: [Phaser.Input.Keyboard.KeyCodes.LEFT],
@@ -132,7 +143,7 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     this.lanes.push(offsetX + marginX + laneWidth / 2 + i * laneWidth);
   }
 
-  // líneas divisorias
+  /* líneas divisorias
   for (let i = 1; i < laneCount; i++) {
     const lineX = offsetX + marginX + i * laneWidth;
     this.add.rectangle(lineX, offsetY + gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
@@ -146,7 +157,7 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     gameHeight,
     0x444444,
     0.3
-  ).setDepth(-1);
+  ).setDepth(-1); */
 
   // PLAYER
   this.player = new PlayerBike(this, this.lanes[2], offsetY + 700, this.lanes);
@@ -166,23 +177,92 @@ this.tweens.add({
   ease: 'Sine.easeInOut'
 });
 
+// ======================
+// HUD DE COOPERATIVO
+// ======================
+
+// --- Jugador 1 (izquierda) ---
+const margen = 40;
+const baseY = this.scale.height - 150; // altura general
+
+// Imagen del jugador 1
+const jugador1Img = this.add.image(margen + 120, baseY, 'chicoRojoHud')
+  .setOrigin(0.5, 0.5)
+  .setScale(1.4)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Controles jugador 1 (por ejemplo WASD o flechas)
+const controles1Img = this.add.image(jugador1Img.x + 180, baseY, 'controlRojoA')
+  .setOrigin(0.5)
+  .setScale(1.2)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Texto sobre las acciones del jugador 1
+const texto1 = this.add.text(jugador1Img.x + 90, baseY - 150,
+  'Jugador 1\nMoverse y Disparar',
+  {
+    fontFamily: 'Arial Black',
+    fontSize: '28px',
+    color: '#ffffff',
+    align: 'center',
+    stroke: '#000000',
+    strokeThickness: 5
+  })
+  .setOrigin(0.5)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+
+// --- Jugador 2 (derecha) ---
+
+const jugador2Img = this.add.image(this.scale.width - (margen + 120), baseY, 'chicoVerdeHud')
+  .setOrigin(0.5, 0.5)
+  .setScale(1.4)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Controles jugador 2 (por ejemplo joystick 2 o flechas)
+const controles2Img = this.add.image(jugador2Img.x - 180, baseY, 'controlVerdeA')
+  .setOrigin(0.5)
+  .setScale(1.2)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+// Texto sobre las acciones del jugador 2
+const texto2 = this.add.text(jugador2Img.x - 90, baseY - 150,
+  'Jugador 2\nApunta y Salta',
+  {
+    fontFamily: 'Arial Black',
+    fontSize: '28px',
+    color: '#ffffff',
+    align: 'center',
+    stroke: '#000000',
+    strokeThickness: 5
+  })
+  .setOrigin(0.5)
+  .setScrollFactor(0)
+  .setDepth(50);
+
+
 
   // --- INTRO: mostrar solo player + fondo durante 3s ---
-  this.introRunning = true;
+  //this.introRunning = true;
   
   // Ocultar elementos que no deben mostrarse en la intro
 
   // --- TEXTO DE TUTORIAL ---
 
-  this.textoIntroduccion = this.add.text(960, 100, 'COMO JUGAR', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  /*this.textoIntroduccion = this.add.text(960, 100, 'COMO JUGAR', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
   this.textoIntroduccion2 = this.add.text(960, 200, 'Recoge la gomera para poder disparar', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-  this.textoIntroduccion3 = this.add.text(960, 250, 'y destruye el camion', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  this.textoIntroduccion3 = this.add.text(960, 250, 'y destruye el camion', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);*/
 
   // imagenes de tutorial
 
   // --- JUGADOR 1 ---
 
-  this.jugador1Texto = this.add.text(500, 440, 'JUGADOR 1', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
+  /*this.jugador1Texto = this.add.text(500, 440, 'JUGADOR 1', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
   this.chicoVerde = this.add.image(500, 540, 'chico_rojo_tutorial').setOrigin(0.5,0).setDepth(3);
   this.controlVerde = this.add.image(500, 700, 'control rojo').setOrigin(0.5,0).setDepth(3);
   this.accionesJugadorV = this.add.text(500, 800, 'APUNTAR Y SALTAR', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
@@ -209,25 +289,25 @@ this.tweens.add({
 
   this.tutorial = this.add.rectangle(960, 540, 1700, 1000, 0x000000).setAlpha(0.9).setDepth(2);
 
-  this.fondoTransparente = this.add.rectangle(960, 540, 2000, 1200, 0x000000).setAlpha(0.5).setDepth(1);
+  this.fondoTransparente = this.add.rectangle(960, 540, 2000, 1200, 0x000000).setAlpha(0.5).setDepth(1);*/
 
   // Texto de cuenta atrás
   this.countdownValue = 5;
 
   // --- FUNCION PARA RESTAR EL TIEMPO PARA QUE TERMINE EL TUTORIAL ---
 
-  this.countdownEvent = this.time.addEvent({
+  /*this.countdownEvent = this.time.addEvent({
     delay: 1000,
     repeat: this.countdownValue - 1,
     callback: () => {
       this.countdownValue -= 1;
     }
-  });
+  });*/
 
   // Evitar que se programen gomeras antes de terminar la intro
   this._scheduleGomeraPending = true;
   // Ejecutar función que termina la intro en 10s
-  this.time.delayedCall(10000, this.startGameplay, [], this);
+  /*this.time.delayedCall(10000, this.startGameplay, [], this);*/
 
   
     // pools de obstáculos...
@@ -523,11 +603,10 @@ exit: () => { this.patron = null; }
     //this.inputSystem.update(); // refresca InputSystem
     this.player.update();
     this.camionFSM.step();
+  this.fondo.update();
 
-    // --- MOVIMIENTO DE LA CIUDAD ---
-    if (this.fondoCiudad) {
-      this.fondoCiudad.tilePositionY -= 10; // ESTO AJUSTA LA VELOCIDAD DEL FONDO
-    }
+    //this.fondoCiudad.tilePositionY -= 10;
+
   }
 
   moveCamion(direction) {
@@ -589,7 +668,7 @@ spawnObstaculo(Tipo, x, y) {
   }
 
   // --- Finaliza la intro y arranca la jugabilidad ---
-  startGameplay() {
+  /*startGameplay() {
     this.introRunning = false;
 
     this.puntuacionPorTiempo = this.time.addEvent({
@@ -615,7 +694,7 @@ spawnObstaculo(Tipo, x, y) {
       this.countdownText.destroy();
       this.countdownText = null;
     }
-    if (this.countdownEvent) {
+    /*if (this.countdownEvent) {
       this.tutorial.setVisible(false)
       this.fondoCiudad.setAlpha(1);
       this.textoIntroduccion.setVisible(false);
@@ -641,5 +720,5 @@ spawnObstaculo(Tipo, x, y) {
       this.countdownEvent.remove(false);
       this.countdownEvent = null;
     }
-  }
+  }*/
 }

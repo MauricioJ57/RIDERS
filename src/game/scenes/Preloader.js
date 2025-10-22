@@ -56,11 +56,28 @@ export class Preloader extends Scene
         this.load.image('caja_icon', 'caja_icon.png');
         this.load.image('bananas_icon', 'bananas_icon.png');
         this.load.image('tomates_icon', 'tomates_icon.png');
+        this.load.image('gomera_icon', 'gomera_icon.png');
         this.load.image('chico_rojo_tutorial', 'chico rojo contorno.png');
         this.load.image('chico_verde_tutorial', 'chico verde contorno.png');
         this.load.image('control rojo', 'control boton abajo R.png');
         this.load.image('control verde', 'control boton abajo V.png');
         this.load.image('dos chicos', 'dos chicos.png');
+        this.load.image('chicosVictoria', 'chicos victoria.png');
+        this.load.image('chicosDerrota', 'chicos derrota.png');
+        this.load.image('chicoRojoHud', 'chico rojo hud.png');
+        this.load.image('chicoVerdeHud', 'chico verde hud.png');
+        this.load.image('chicos_hud', 'chicos hud.png');
+
+        this.load.image('controlVerdeA', 'control verde a.png');
+        this.load.image('controlRojoA', 'control rojo a.png');
+        this.load.image('controlVerdeAX', 'control verde a x.png');
+        this.load.image('controlRojoAX', 'control rojo a x.png');
+        this.load.image('controlRojoB', 'control rojo b.png');
+
+        this.load.image('veredaIzq', 'vereda_izq.png');
+        this.load.image('calle', 'calle.png');
+        this.load.image('veredaDer', 'vereda_der.png');
+        
 
         this.load.spritesheet('bicigomera', 'bicigomera.png', { frameWidth: 64, frameHeight: 128 });
 
