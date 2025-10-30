@@ -118,24 +118,6 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
       this.lanes.push(offsetX + marginX + laneWidth / 2 + i * laneWidth);
     }
 
-      /* líneas divisorias
-  for (let i = 1; i < laneCount; i++) {
-    const lineX = offsetX + marginX + i * laneWidth;
-    this.add.rectangle(lineX, offsetY + gameHeight / 2, 2, gameHeight, 0x000000).setOrigin(0.5);
-  } */
-
-  /* fondo de la calle
-  this.add.rectangle(
-    offsetX + gameWidth / 2,
-    offsetY + gameHeight / 2,
-    gameWidth - marginX * 2,
-    gameHeight,
-    0x444444,
-    0.3
-  ).setDepth(-1); */
-
-
-
     // Jugador 1 (bici)
     this.player1 = new PlayerBike(this, this.lanes[2], offsetY + 700, this.lanes);
 
@@ -156,64 +138,9 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     this.physics.add.overlap(this.player1, this.poolTomates, (p, o) => p.handleCollision(o));
     this.physics.add.overlap(this.player1, this.poolBananas, (p, o) => p.handleCollision(o));
 
-    
-  // --- INTRO: mostrar solo player + fondo durante 3s ---
-  /*this.introRunning = true;*/
-
-  // --- TEXTO DE TUTORIAL ---
-
-  /*this.textoIntroduccion = this.add.text(960, 100, 'COMO JUGAR', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-  this.textoIntroduccion2 = this.add.text(960, 200, 'Recoge la gomera para poder disparar', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-  this.textoIntroduccion3 = this.add.text(960, 250, 'y destruye el camion', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-
-  // imagenes de tutorial
-
-  // --- JUGADOR 1 ---
-
-  this.jugador1Texto = this.add.text(500, 440, 'JUGADOR 1', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-  this.chicos = this.add.image(500, 540, 'dos chicos').setOrigin(0.5,0).setDepth(3);
-  this.controlVerde = this.add.image(500, 700, 'control rojo').setOrigin(0.5,0).setDepth(3);
-  this.accionesJugadorV = this.add.text(500, 800, 'LUCHA CONTRA EL CAMION', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-
-  // --- JUGADOR 2 ---
-
-  this.jugador2Texto = this.add.text(960, 440, 'JUGADOR 2', {fontFamily: "arial", fontSize: '64px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-  this.camionImagen = this.add.image(960, 540, 'camion').setOrigin(0.5,0).setDepth(3);
-  this.controlCamion = this.add.image(960, 840, 'control verde').setOrigin(0.5,0).setDepth(3);
-  this.accionesJugadorC = this.add.text(960, 940, 'LANZA OBSTACULOS', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-
-  // --- IMAGENES DE OBSTACULOS ---
-
-  this.cajaImagen = this.add.image(1400, 440, 'caja_icon').setOrigin(0.5,0).setDepth(3);
-  this.textoCaja = this.add.text(1550, 450, '¡ESQUIVA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-
-  this.bananaImagen = this.add.image(1400, 540, 'bananas_icon').setOrigin(0.5,0).setDepth(3);
-  this.textoBanana = this.add.text(1550, 550, '¡ESQUIVA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-
-  this.tomateImagen = this.add.image(1400, 640, 'tomates_icon').setOrigin(0.5,0).setDepth(3);
-  this.textoTomate = this.add.text(1550, 650, '¡SALTA!', {fontFamily: "arial", fontSize: '32px', fill: '#ffffffff'}).setOrigin(0.5,0).setDepth(3);
-
-  // --- IMAGEN INICIAL DE TUTORIAL ---
-
-  this.tutorial = this.add.rectangle(960, 540, 1700, 1000, 0x000000).setAlpha(0.9).setDepth(2);
-
-  this.fondoTransparente = this.add.rectangle(960, 540, 2000, 1200, 0x000000).setAlpha(0.5).setDepth(1);*/
-
-  // --- TIEMPO NECESARIO PARA QUE TERMINE EL TUTORIAL ---
-
-  /*this.countdownEvent = this.time.addEvent({
-    delay: 1000,
-    repeat: this.countdownValue - 1,
-    callback: () => {
-      this.countdownValue -= 1;
-    }
-  });*/
-
   // Evitar que se programen gomeras antes de terminar la intro
   this._scheduleGomeraPending = true;
   // Ejecutar función que termina la intro en 10s
-  /*this.time.delayedCall(10000, this.startGameplay, [], this);*/
-
 
         // --- GOMERAS ---
     this.poolGomeras = this.physics.add.group({ classType: PickupGomera, maxSize: 5, runChildUpdate: true });
@@ -358,43 +285,4 @@ spawnObstaculo(Tipo, x, y) {
     this.scheduleNextGomera();
   });
 }
-
-
-  /*startGameplay() {
-    this.introRunning = false;
-    // Mostrar elementos ocultos
-
-    // Quitar texto de cuenta atrás si existe
-    if (this.countdownText) {
-      this.countdownText.setVisible(false);
-      this.countdownText.destroy();
-      this.countdownText = null;
-    }
-    /*if (this.countdownEvent) {
-      this.tutorial.setVisible(false)
-      this.fondoCiudad.setAlpha(1);
-      this.fondoTransparente.setVisible(false);
-      this.chicos.setVisible(false);
-      this.controlVerde.setVisible(false);
-      this.accionesJugadorV.setVisible(false);
-      this.camionImagen.setVisible(false);
-      this.controlCamion.setVisible(false);
-      this.accionesJugadorC.setVisible(false);
-      this.cajaImagen.setVisible(false);
-      this.textoCaja.setVisible(false);
-      this.bananaImagen.setVisible(false);
-      this.textoBanana.setVisible(false);
-      this.tomateImagen.setVisible(false);
-      this.textoTomate.setVisible(false);
-      this.textoIntroduccion.setVisible(false);
-      this.textoIntroduccion2.setVisible(false);
-      this.textoIntroduccion3.setVisible(false);
-      this.jugador1Texto.setVisible(false);
-      this.jugador2Texto.setVisible(false);
-    }
-    if (this.countdownEvent) {
-      this.countdownEvent.remove(false);
-      this.countdownEvent = null;
-    }
-  }*/
 }

@@ -59,22 +59,6 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     // efecto de camara
     this.shakeCamera = this.scene.cameras.add(0, 0, this.scene.sys.game.config.width, this.scene.sys.game.config.height).setScroll(0, 0);
 
-    //interfaz de jugadores
-    /*this.hudJugadorMovimiento = scene.add.image(200, 1000, 'jugadorMovimientoDisparo').setScrollFactor(0).setDepth(2);
-    this.hudJugadorMira = scene.add.image(1720, 1000, 'jugadorSaltoMira').setScrollFactor(0).setDepth(2);
-
-    // --- CONTROLES ---
-
-    this.HudControlDisparo = scene.add.image(400, 1000, 'controlDisparo').setScrollFactor(0).setDepth(2);
-    this.HudControlMira = scene.add.image(1520, 1000, 'controlMira').setScrollFactor(0).setDepth(2);
-
-    // figuras genericas (remplazar mas tarde por consumo de recursos)
-    this.marcoHudMovimiento2 = scene.add.rectangle(200, 980, 220, 170, 0xff0000ff, 1);
-    this.marcoHudMovimiento1 = scene.add.rectangle(200, 980, 200, 150, 0xffffff, 1);
-    
-    this.marcoHudMira2 = scene.add.rectangle(1720, 980, 220, 170, 0xff0000ff, 1);
-    this.marcoHudMira1 = scene.add.rectangle(1720, 980, 200, 150, 0xffffff, 1);*/
-
     // gomera
     this.hasGomera = false;
     this.mira = scene.add.sprite(this.x, this.y - 200, 'mira').setDepth(1).setVisible(false);
