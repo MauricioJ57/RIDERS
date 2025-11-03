@@ -4,6 +4,8 @@ import StateMachine from '../clases/StateMachine.js';
 import { Caja, Tomate, Banana, PickupGomera } from '../clases/obstaculos.js';
 import PlayerBike from '../clases/PlayerBike.js';
 import { crearFondoTriple } from '../utils/crearFondoTriple.js';
+import AudioManager from '../systems/AudioManager.js';
+
 
 
 // ESCENA PRINCIPAL
@@ -48,6 +50,15 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
 
     this.lastSpawnTime = 0;
     this.spawnCooldown = 800; // milisegundos de espera entre spawns (0.5 segundos)
+
+    AudioManager.playMusic(this, 'musica_juego', 0.3);
+    // --- SONIDO DEL CAMIÓN ---
+this.sonidoCamion = this.sound.add('sfx_camionMotor', {
+  volume: 0.3,
+  loop: true
+});
+this.sonidoCamion.play();
+
 
       this.anims.create({
   key: 'pedalear',
@@ -564,6 +575,12 @@ spawnObstaculo(Tipo, x, y) {
   // === Spawnear el obstáculo normalmente ===
   const obj = pool.get(x, y);
   if (obj) obj.reset(x, y);
+
+  // --- SONIDOS RANDOM DE OBSTÁCULO ---
+const sonidosSpawn = ['sfx_obstaculo1', 'sfx_obstaculo2'];
+const sonidoElegido = Phaser.Utils.Array.GetRandom(sonidosSpawn);
+this.sound.play(sonidoElegido, { volume: 0.7 });
+
 }
 
   soltarObstaculo() {

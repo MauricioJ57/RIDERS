@@ -2,6 +2,7 @@
 import { Scene } from 'phaser';
 import InputSystem, { INPUT_ACTIONS } from '../systems/InputSystem.js';
 import { crearFondoTriple } from '../utils/crearFondoTriple.js';
+import AudioManager from '../systems/AudioManager.js';
 
 export class MainMenu extends Scene {
   constructor() {
@@ -9,6 +10,8 @@ export class MainMenu extends Scene {
   }
 
   create() {
+
+    AudioManager.playMusic(this, 'musica_menu', 0.5);
     // === Fondo ===
     /*this.fondoCiudad = this.add
       .tileSprite(0, 0, 2048, 1080, 'ciudad')

@@ -4,6 +4,8 @@ import PlayerBike from '../clases/PlayerBike.js';
 import PlayerCamionVersus from '../clases/PlayerCamionVersus.js';
 import { Caja, Tomate, Banana, PickupGomera } from '../clases/obstaculos.js';
 import { crearFondoTriple } from '../utils/crearFondoTriple.js';
+import AudioManager from '../systems/AudioManager.js';
+
 
 
 
@@ -49,7 +51,15 @@ actualizarBarraVidaCamion(vidas, vidasMax) {
     // Fondo
     //his.fondoCiudad = this.add.tileSprite(0, 0, 2048, 1536, 'ciudad').setOrigin(0, 0);
 
-    this.gameOver = false; // 🔧 evita que quede en true de la partida anterior
+    this.gameOver = false; // evita que quede en true de la partida anterior
+
+    AudioManager.playMusic(this, 'musica_juego', 0.3);
+    // --- SONIDO DEL CAMIÓN ---
+this.sonidoCamion = this.sound.add('sfx_camionMotor', {
+  volume: 0.3,
+  loop: true
+});
+this.sonidoCamion.play();
 
 
        this.fondo = crearFondoTriple(this, {

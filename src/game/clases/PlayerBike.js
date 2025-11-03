@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { INPUT_ACTIONS } from '../systems/InputSystem.js';
 import StateMachine from '../clases/StateMachine.js';
 
+
 export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, lanes) {
     super(scene, x, y, 'bici');
@@ -77,6 +78,14 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
         exit: () => { this.jumpUntil = null; }
       }
     }, this);
+
+    // --- SONIDO DE LA BICI ---
+this.sonidoBici = this.scene.sound.add('sfx_biciSonido', {
+  volume: 0.6,
+  loop: true
+});
+this.sonidoBici.play();
+
   }
 
   update() {
@@ -99,6 +108,18 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
       const duracionSalto = esVersus ? 700 : 1000;
       const duracionTween = esVersus ? 350 : 500;
 
+      this.scene.sound.play('sfx_salto', { volume: 0.3 });
+
+            // --- SONIDOS DE SALTO RANDOM ---
+const sonidosSalto = ['sfx_neneSalto1', 'sfx_neneSalto2'];
+const sonidoElegidoSalto = Phaser.Utils.Array.GetRandom(sonidosSalto);
+this.scene.sound.play(sonidoElegidoSalto, { volume: 0.8 });
+
+      // --- Detener sonido de bici al saltar ---
+  if (this.sonidoBici && this.sonidoBici.isPlaying) {
+    this.sonidoBici.pause();
+  }
+
       this.FSM.transition('jumping', { duration: duracionSalto });
       this.setDepth(1);
 
@@ -120,6 +141,11 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
           this.FSM.transition('normal');
           this.estaSaltando = false;
           this.jumpTween = null;
+
+          // --- Reanudar sonido de bici al caer ---
+      if (this.sonidoBici && !this.sonidoBici.isPlaying) {
+        this.sonidoBici.resume();
+      }
         }
       });
     }
@@ -178,6 +204,14 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
       camion.setTint(0xff0000);
       this.scene.time.delayedCall(500, () => camion.clearTint());
 
+      this.scene.sound.play('sfx_disparo', { volume: 0.6 });
+
+        // --- SONIDOS DE risa RANDOM ---
+const sonidosRisas = ['sfx_neneRisa1', 'sfx_neneRisa2', 'sfx_neneRisa3', 'sfx_neneRisa4'];
+const sonidoElegidoRisa = Phaser.Utils.Array.GetRandom(sonidosRisas);
+this.scene.sound.play(sonidoElegidoRisa, { volume: 0.8 });
+
+
       this.scene.vidasCamion -= 1;
       if (this.scene.vidasCamion < 0) this.scene.vidasCamion = 0;
 
@@ -198,10 +232,23 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
 
         if (this.scene.puntuacion !== undefined) payload.puntaje = this.scene.puntuacion;
 
+    if (this.sonidoBici) {
+      this.sonidoBici.stop();
+      this.sonidoBici.destroy();
+    }
+    //Detener sonidos GLOBALES al finalizar partida
+if (this.scene.sonidoCamion) {
+  this.scene.sonidoCamion.stop();
+  this.scene.sonidoCamion.destroy();
+  this.scene.sonidoCamion = null;
+}
+
+
+
         this.scene.scene.start('GameOver', payload);
       }
     }
-
+    this.scene.sound.play('sfx_fallo', { volume: 0.6 });
     this.hasGomera = false;
     this.mira.setVisible(false);
     this.play('pedalear');
@@ -217,12 +264,17 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
       this.mira.setVisible(true);
     }
     this.play('biciConGomera');
+    this.scene.sound.play('sfx_recogerItem', { volume: 0.7 });
+    this.scene.time.delayedCall(200, () => {
+    this.scene.sound.play('sfx_gomeraSonido', { volume: 0.4 });
+    });
   }
 
   handleCollision(obstaculo) {
     if (this.FSM.state === 'jumping' && obstaculo.tipo === 'tomates') return;
 
     if (obstaculo.tipo === 'banana') {
+      this.scene.sound.play('sfx_banana', { volume: 0.4 });
       obstaculo.deactivate();
       let dir = 0;
       if (this.currentLane === 0) dir = 1;
@@ -238,58 +290,80 @@ export default class PlayerBike extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  perderVida() {
-    this.lives--;
+perderVida() {
+  this.lives--;
 
-    if (this.lives === 2) {
-      this.vidasVisiblesLlenas.setVisible(false);
-      this.vidasVisibles2.setVisible(true);
-    } else if (this.lives === 1) {
-      this.vidasVisibles2.setVisible(false);
-      this.vidasVisibles1.setVisible(true);
-    } else if (this.lives <= 0 && !this.scene.gameOver) {
-      this.scene.gameOver = true;
-      const modo = (this.scene.scene.key === 'Versus') ? 'Versus' : 'Cooperativo';
-      const payload = (modo === 'Cooperativo')
-        ? { modo, resultado: 'derrota', ganador: 'ninguno' }
-        : { modo, resultado: 'derrota', ganador: 'camion' };
+  // --- SONIDOS DE DAÑO RANDOM ---
+const sonidosDañoNene = ['sfx_neneDaño1', 'sfx_neneDaño2'];
+const sonidoElegidoNene = Phaser.Utils.Array.GetRandom(sonidosDañoNene);
+this.scene.sound.play(sonidoElegidoNene, { volume: 0.8 });
 
-console.log('💀 vidas bici:', this.lives, 'gameOver:', this.scene.gameOver);
-console.log('Modo detectado:', this.scene.scene.key);
-console.log('Payload:', payload);
+this.scene.sound.play('sfx_daño', { volume: 0.7 });
 
 
-      if (this.scene.puntuacion !== undefined) payload.puntaje = this.scene.puntuacion;
-      this.scene.scene.start('GameOver', payload);
-      return;
+
+  if (this.lives === 2) {
+    this.vidasVisiblesLlenas.setVisible(false);
+    this.vidasVisibles2.setVisible(true);
+  } else if (this.lives === 1) {
+    this.vidasVisibles2.setVisible(false);
+    this.vidasVisibles1.setVisible(true);
+  } else if (this.lives <= 0 && !this.scene.gameOver) {
+    this.scene.gameOver = true;
+    const modo = (this.scene.scene.key === 'Versus') ? 'Versus' : 'Cooperativo';
+    const payload = (modo === 'Cooperativo')
+      ? { modo, resultado: 'derrota', ganador: 'ninguno' }
+      : { modo, resultado: 'derrota', ganador: 'camion' };
+
+    console.log('vidas bici:', this.lives, 'gameOver:', this.scene.gameOver);
+    console.log('Modo detectado:', this.scene.scene.key);
+    console.log('Payload:', payload);
+
+    if (this.scene.puntuacion !== undefined) payload.puntaje = this.scene.puntuacion;
+
+    // Solo acá se detiene y destruye el sonido BICI
+    if (this.sonidoBici) {
+      this.sonidoBici.stop();
+      this.sonidoBici.destroy();
     }
+//Detener sonidos GLOBALES al finalizar partida
+if (this.scene.sonidoCamion) {
+  this.scene.sonidoCamion.stop();
+  this.scene.sonidoCamion.destroy();
+  this.scene.sonidoCamion = null;
+}
 
-    this.invulnerable = true;
-
-    if (this.danoTween) {
-      this.danoTween.remove();
-      this.setAlpha(1);
-    }
-
-    this.danoTween = this.scene.tweens.add({
-      targets: this,
-      alpha: 0.3,
-      yoyo: true,
-      repeat: 6,
-      duration: 200,
-      onComplete: () => {
-        this.setAlpha(1);
-        this.danoTween = null;
-      }
-    });
-
-    this.shakeCamera.shake(500, 0.001);
-
-    this.scene.time.delayedCall(2000, () => {
-      this.invulnerable = false;
-      this.setAlpha(1);
-    });
+    this.scene.scene.start('GameOver', payload);
+    return;
   }
+
+  // 🔹 Si solo perdió una vida, el sonido sigue normalmente
+  this.invulnerable = true;
+
+  if (this.danoTween) {
+    this.danoTween.remove();
+    this.setAlpha(1);
+  }
+
+  this.danoTween = this.scene.tweens.add({
+    targets: this,
+    alpha: 0.3,
+    yoyo: true,
+    repeat: 6,
+    duration: 200,
+    onComplete: () => {
+      this.setAlpha(1);
+      this.danoTween = null;
+    }
+  });
+
+  this.shakeCamera.shake(500, 0.001);
+
+  this.scene.time.delayedCall(2000, () => {
+    this.invulnerable = false;
+    this.setAlpha(1);
+  });
+}
 
   // 🔹 Método nuevo: limpieza completa
   limpiarEfectos() {
