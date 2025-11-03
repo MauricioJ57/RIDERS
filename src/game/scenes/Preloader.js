@@ -78,6 +78,30 @@ export class Preloader extends Scene
 
         this.load.spritesheet('bicigomera', 'bicigomera.png', { frameWidth: 64, frameHeight: 128 });
 
+        //audio
+        this.load.audio('musica_menu', 'audio/Menu.mp3');
+        this.load.audio('musica_juego', 'audio/Gameplay.mp3');
+        this.load.audio('sfx_salto', 'audio/Jump7.wav');
+        this.load.audio('sfx_banana', 'audio/Jump4.wav');
+        this.load.audio('sfx_disparo', 'audio/daño1.wav');
+        this.load.audio('sfx_daño', 'audio/daño2.wav');
+        this.load.audio('sfx_fallo', 'audio/Hit6.wav');
+        this.load.audio('sfx_recogerItem', 'audio/item3.wav');
+        this.load.audio('sfx_camionMotor', 'audio/camion_motor.wav');
+        this.load.audio('sfx_biciSonido', 'audio/bici_sonido.wav');
+        this.load.audio('sfx_gomeraSonido', 'audio/gomera_sonido.wav');
+        this.load.audio('sfx_neneDaño1', 'audio/nene_daño1.wav');
+        this.load.audio('sfx_neneDaño2', 'audio/nene_daño2.wav');
+        this.load.audio('sfx_neneRisa1', 'audio/nene_risa1.wav');
+        this.load.audio('sfx_neneRisa2', 'audio/nene_risa2.wav');
+        this.load.audio('sfx_neneRisa3', 'audio/nene_risa3.wav');
+        this.load.audio('sfx_neneRisa4', 'audio/nene_risa4.wav');
+        this.load.audio('sfx_neneSalto1', 'audio/nene_salto.wav');
+        this.load.audio('sfx_neneSalto2', 'audio/nene_salto2.wav');
+        this.load.audio('sfx_obstaculo1', 'audio/objeto1.wav');
+        this.load.audio('sfx_obstaculo2', 'audio/objeto2.wav');
+
+
     }
 
     create ()
