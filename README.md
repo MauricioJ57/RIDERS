@@ -1,19 +1,52 @@
-INTEGRANTES DEL GRUPO: MAURICIO JACKI(programador),
+<div align="center">
+  <img width="350" alt="Tira Piedras" src="https://github.com/MauricioJ57/RIDERS/blob/main/public/assets/logo.png" />
+  <br><br>
+</div>
 
-INFORMACION DEL PROYECTO: Videojuego desarrollado en phaser a traves de vite, estetica urbana, multijugador cooperativo y versus, se uso P.O.O (Programacion Orientada a Objetos)
+## Equipo: PRIME studios
 
-COSAS IMPLEMENTADAS: Sonidos, controles con gamepad, division de objetos por clases en archivos distintos, StateMachine para el manejo de estados de los objetos
+INTEGRANTES DEL GRUPO: Programador, Mauricio Jacki; Orquesta, Juan Martin Vianco; Artista, Nicolas Alcaraz.
 
-RESUMEN DEL PROYECTO: Dos chicos deben recoger una gomera para atacar al camion y destruirlo para ganar la partida, esto se comparte entre ambos modos
+## Resumen
+“Tira Piedras” es un videojuego arcade para 2 jugadores, de arte pixel art 2D con estética urbana en vista top-down, pensado para jugarse en una réplica de máquina arcade clásica y funcionar en base a una dinámica basada en 2 modos de juego: cooperativo y versus.
 
-## CONTROLES DE COOPERATIVO: 
+En el modo cooperativo, los jugadores controlan a 2 niños “maleducados” montados en una misma bicicleta, quienes avanzan de manera constante y deben perseguir por las calles del barrio a un camión repartidor de verduras, disparandole con una gomera hasta estropearlo por completo. Un jugador controla el movimiento lateral y el disparo, mientras que el otro se encarga del salto y la puntería de la gomera.
 
-Player 1: el jugador 1 controla el movimiento(flechas en PC) y el disparo(tecla K en PC), 
-Player 2: El jugador 2 controla el salto(barra espaciadora o SPACE en PC) y el apuntado de la gomera(teclas WASD en PC)
+En el modo versus, un jugador asume el rol del ciclista mientras el otro controla al camión, lanzando objetos aleatorios como cajas o verduras para entorpecer el avance. El objetivo en este caso es que uno de los 2 jugadores logre derribar al otro durante el recorrido.
 
-## CONTROLES DE VERSUS:
+## Controles Cooperativo:
+Jugador 1
+- Movimiento lateral de la bicicleta (flechas en PC)
+- Botón de acción: disparar con la gomera (tecla K)
 
-Player 1: El jugador 1 controla el movimiento(flechas en PC), el disparo(tecla K en PC) y el salto(barra espaciadora o SPACE en PC) de los chicos en la bici
-Player 2: El jugador 2 controla el camion, movimiento(teclas WASD en PC), soltar objetos(tecla F en PC) y puede elegir que objetos lanzar(tecla G en PC)
+Jugador 2
+- Controla el apuntado del disparo (teclas WASD)
+- Botón de acción: saltar para esquivar obstáculos (barra espaciadora)
 
-se termino la fase de entrega del proyecto
+## Controles Versus:
+Jugador 1
+- Movimiento lateral de la bicicleta (flechas en PC)
+- Botón de acción 1: disparar con la gomera (tecla K)
+- Botón de acción 2: saltar para esquivar obstáculos (barra espaciadora)
+
+Jugador 2
+- Movimiento lateral del camión (teclas WASD)
+- Botón de acción 1: seleccionar los obstáculos a lanzar (tecla G)
+- Botón de acción 2: lanzar obstáculos (tecla F)
+
+
+## Informacion Tecnica:
+Para el desarrollo del juego se utiliza Phaser 3 como motor de desarrollo junto con el programa Visual Studio Code y de Vite. Dispone de modalidades multijugador en cooperativo y versus. Se implementó P.O.O (Programacion Orientada a Objetos)
+
+Se implementaron sonidos y musica de libre uso y sprites desarrollados en Paint y Piskel. Se aplicaron controles con gamepad, division de objetos por clases en archivos separados y StateMachine para el manejo de estados de los objetos.
+
+## Trailer
+
+https://drive.google.com/file/d/1wiZyEwuBUUkRfzth9sAKS8jjoCCTzCc4/view?usp=sharing
+
+## Link al juego
+
+https://riders-rust.vercel.app/
+
+
+
