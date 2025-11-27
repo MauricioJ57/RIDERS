@@ -1,5 +1,7 @@
 // src/game/ui/HUDCoop.js
 import Phaser from 'phaser';
+import { getPhrase } from "../../servicios/translations.js";
+import keys from "../../traducciones/keys.js";
 
 export default class HUDCoop {
   constructor(scene, vidasCamionMax = 6, vidasBiciMax = 3) {
@@ -20,10 +22,11 @@ export default class HUDCoop {
   // =====================================================
   crearPuntuacion() {
     const scene = this.scene;
-
     scene.puntuacion = 0;
 
-    this.textoPuntuacion = scene.add.text(16, 16, 'Puntuación: 0', {
+    const label = getPhrase(keys.sceneGameCoop.score) + ": ";
+
+    this.textoPuntuacion = scene.add.text(16, 16, label + "0", {
       fontFamily: "arial",
       fontSize: '40px',
       fill: '#ffffffff',
@@ -34,7 +37,7 @@ export default class HUDCoop {
       delay: 1000,
       callback: () => {
         scene.puntuacion += 10;
-        this.textoPuntuacion.setText('Puntuación: ' + scene.puntuacion);
+        this.textoPuntuacion.setText(label + scene.puntuacion);
       },
       loop: true
     });
@@ -108,34 +111,34 @@ export default class HUDCoop {
     const margen = 40;
     const baseY = scene.scale.height - 150;
 
+    const t1 = getPhrase(keys.sceneGameCoop.player1) + "\n" +
+               getPhrase(keys.sceneGameCoop.actionPlayer1);
+
+    const t2 = getPhrase(keys.sceneGameCoop.player2) + "\n" +
+               getPhrase(keys.sceneGameCoop.actionPlayer2);
+
     const jugador1Img = scene.add.image(margen + 120, baseY, 'chicoRojoHud')
       .setOrigin(0.5)
       .setScale(1.4)
       .setScrollFactor(0)
       .setDepth(50);
 
-    const controles1Img = scene.add.image(jugador1Img.x + 180, baseY, 'controlRojoA')
+    const controlJ1 = scene.add.image(jugador1Img.x + 170, baseY, 'controlRojoA')
       .setOrigin(0.5)
       .setScale(1.2)
       .setScrollFactor(0)
       .setDepth(50);
 
-    const texto1 = scene.add.text(
+    scene.add.text(
       jugador1Img.x + 90,
       baseY - 150,
-      'Jugador 1\nMoverse y Disparar',
-      {
-        fontFamily: 'Arial Black',
-        fontSize: '28px',
-        color: '#ffffff',
-        align: 'center',
-        stroke: '#000000',
-        strokeThickness: 5
-      }
+      t1,
+      { fontFamily: 'Arial Black', fontSize: '28px', color: '#ffffff',
+        align: 'center', stroke: '#000000', strokeThickness: 5 }
     )
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(50);
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setDepth(50);
 
     const jugador2Img = scene.add.image(scene.scale.width - (margen + 120), baseY, 'chicoVerdeHud')
       .setOrigin(0.5)
@@ -143,36 +146,21 @@ export default class HUDCoop {
       .setScrollFactor(0)
       .setDepth(50);
 
-    const controles2Img = scene.add.image(jugador2Img.x - 180, baseY, 'controlVerdeA')
+    const controlJ2 = scene.add.image(jugador2Img.x - 170, baseY, 'controlVerdeA')
       .setOrigin(0.5)
       .setScale(1.2)
       .setScrollFactor(0)
       .setDepth(50);
 
-    const texto2 = scene.add.text(
+    scene.add.text(
       jugador2Img.x - 90,
       baseY - 150,
-      'Jugador 2\nApunta y Salta',
-      {
-        fontFamily: 'Arial Black',
-        fontSize: '28px',
-        color: '#ffffff',
-        align: 'center',
-        stroke: '#000000',
-        strokeThickness: 5
-      }
+      t2,
+      { fontFamily: 'Arial Black', fontSize: '28px', color: '#ffffff',
+        align: 'center', stroke: '#000000', strokeThickness: 5 }
     )
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(50);
-
-    this.hudElements = {
-      jugador1Img,
-      controles1Img,
-      texto1,
-      jugador2Img,
-      controles2Img,
-      texto2
-    };
+    .setOrigin(0.5)
+    .setScrollFactor(0)
+    .setDepth(50);
   }
 }

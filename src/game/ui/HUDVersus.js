@@ -1,5 +1,7 @@
 // src/game/ui/HUDVersus.js
 import Phaser from "phaser";
+import { getPhrase } from "../../servicios/translations.js";
+import keys from "../../traducciones/keys.js";
 
 export default class HUDVersus {
   constructor(scene, vidasCamionMax = 6, vidasBiciMax = 3) {
@@ -79,12 +81,21 @@ export default class HUDVersus {
   crearHUDPlayers() {
     const scene = this.scene;
 
-    // ----------------------
-    // JUGADOR 1 (BICI)
-    // ----------------------
     const margen = 40;
     const baseY = scene.scale.height - 150;
 
+    // --- TRADUCCIONES ---
+    const p1Label =
+      getPhrase(keys.sceneGameVersus.player1) + "\n" +
+      getPhrase(keys.sceneGameVersus.actionPlayer1);
+
+    const p2Label =
+      getPhrase(keys.sceneGameVersus.player2) + "\n" +
+      getPhrase(keys.sceneGameVersus.actionPlayer2);
+
+    // ----------------------
+    // JUGADOR 1 (BICI)
+    // ----------------------
     const neneHUD = scene.add.image(margen + 150, baseY, "chicos_hud")
       .setOrigin(0.5)
       .setScale(1.3)
@@ -100,7 +111,7 @@ export default class HUDVersus {
     const textoP1 = scene.add.text(
       neneHUD.x + 90,
       baseY - 150,
-      "Jugador 1 \nMoverse, Saltar y Disparar",
+      p1Label,
       {
         fontFamily: "Arial Black",
         fontSize: "28px",
@@ -129,7 +140,7 @@ export default class HUDVersus {
     const textoP2 = scene.add.text(
       baseX2 - 80,
       baseY2 + 140,
-      "Jugador 2 \nMoverse, Elegir objeto y Lanzar",
+      p2Label,
       {
         fontFamily: "Arial Black",
         fontSize: "26px",
@@ -143,7 +154,6 @@ export default class HUDVersus {
       .setScrollFactor(0)
       .setDepth(50);
 
-    // Guardar si necesitás referencias
     this.hudElements = {
       neneHUD,
       controlesP1,

@@ -2,14 +2,21 @@ import { Scene } from "phaser";
 import InputSystem, { INPUT_ACTIONS } from "../systems/InputSystem.js";
 import { crearFondoTriple } from "../utils/crearFondoTriple.js";
 import AudioManager from "../systems/AudioManager.js";
-
 import MenuButtons from "../ui/MenuButtons.js";
 import { crearTutorialCoop } from "../ui/TutorialCoop.js";
 import { crearTutorialVersus } from "../ui/TutorialVersus.js";
+import { DE, EN, ES, PT } from "../../traducciones/languages.js";
+import { FETCHED, FETCHING, READY, TODO } from "../../traducciones/status.js";
+import { setLanguage, getSavedLanguage, getTranslations, getPhrase } from "../../servicios/translations.js";
+import keys from "../../traducciones/keys.js";
 
 export class MainMenu extends Scene {
   constructor() {
     super("MainMenu");
+  }
+
+  init({ language = ES }) {
+    this.language = language;
   }
 
   create() {
@@ -37,13 +44,49 @@ export class MainMenu extends Scene {
     // Botones
     this.menu = new MenuButtons(this);
 
-    this.menu.crearBoton(960, 550, "COOPERATIVO", "Game", "cooperativo");
-    this.menu.crearBoton(960, 700, "VERSUS", "Versus", "versus");
+    this.menu.crearBoton(
+  960, 
+  550, 
+  getPhrase(keys.sceneInitialMenu.cooperative), 
+  "Game", 
+  "cooperativo"
+);
+    this.menu.crearBoton(
+  960, 
+  700, 
+  getPhrase(keys.sceneInitialMenu.versus), 
+  "Versus", 
+  "versus"
+);
 
     this.menu.seleccionar(0, true);
 
     // Tutorial
     this.tutorialOpen = false;
+
+    // --- BOTÓN CAMBIAR IDIOMA ---
+this.idiomaActual = getSavedLanguage(); // obtenés el idioma actual
+
+this.botonIdiomaIngles = this.add.text(
+  this.scale.width - 50, 
+  40, 
+  this.idiomaActual === ES ? "EN" : "ES",
+  {
+    fontFamily: "Arial Black",
+    fontSize: 64,
+    color: "#ffffff"
+  }
+)
+.setOrigin(1, 0)
+.setInteractive()
+.setDepth(20);
+
+this.botonIdiomaIngles.on("pointerdown", () => {
+  const nuevoIdioma = this.idiomaActual === ES ? EN : ES;
+  getTranslations(nuevoIdioma, () => {
+    this.scene.restart(); // recargar escena con idioma nuevo
+  });
+});
   }
 
   abrirTutorial(tipo) {
@@ -62,12 +105,12 @@ export class MainMenu extends Scene {
 
     this.tutorialContainer = this.add.container(0, 0).setDepth(11);
 
-    this.add.text(width / 2, 120, "CÓMO JUGAR", {
-      fontFamily: "Arial Black",
-      fontSize: 56,
-      color: "#ffffff"
-    }).setOrigin(0.5)
-      .setDepth(11);
+    this.add.text(width / 2, 120, getPhrase(keys.sceneInitialMenu.howToPlay), {
+  fontFamily: "Arial Black",
+  fontSize: 56,
+  color: "#ffffff"
+}).setOrigin(0.5)
+  .setDepth(11);
 
     if (tipo === "cooperativo") {
       crearTutorialCoop(this, width, height, this.tutorialContainer);

@@ -1,6 +1,8 @@
 // GameOver.js
 import { Scene } from 'phaser';
 import InputSystem, { INPUT_ACTIONS } from '../systems/InputSystem.js';
+import { getPhrase } from '../../servicios/translations.js';
+import keys from '../../traducciones/keys.js';
 
 export class GameOver extends Scene {
   constructor() {
