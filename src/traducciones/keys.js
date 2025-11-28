@@ -44,17 +44,14 @@ const sceneGameTutorialVersus = {
   continueButton: "CONTINUAR"
 }
 
-const sceneGameOvercoop = {
-  gameOver: "Derrota",
-  retry: "Volver a Jugar",
-  backToMenu: "Volver al Menú"
-};
-
-const sceneGameOverVersus = {
+const sceneGameOver = {
+  gameOver: "Derrota...",
+  gameOverVictory: "¡VICTORIA!",
+  score: "Puntaje",
+  retry: "Volver a jugar",
+  backToMenu: "Volver al Menú",
   victoriaPlayer1: "¡Jugador 1 (Bici) Gana!",
   victoriaPlayer2: "¡Jugador 2 (Camión) Gana!",
-  retry: "Volver a Jugar",
-  backToMenu: "Volver al Menú"
 };
 
 export default {
@@ -63,6 +60,5 @@ export default {
   sceneGameTutorialCoop,
   sceneGameTutorialVersus,
   sceneInitialMenu,
-  sceneGameOvercoop,
-  sceneGameOverVersus,
+  sceneGameOver
 };
