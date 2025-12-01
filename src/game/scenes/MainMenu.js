@@ -5,9 +5,8 @@ import AudioManager from "../systems/AudioManager.js";
 import MenuButtons from "../ui/MenuButtons.js";
 import { crearTutorialCoop } from "../ui/TutorialCoop.js";
 import { crearTutorialVersus } from "../ui/TutorialVersus.js";
-import { DE, EN, ES, PT } from "../../traducciones/languages.js";
-import { FETCHED, FETCHING, READY, TODO } from "../../traducciones/status.js";
-import { setLanguage, getSavedLanguage, getTranslations, getPhrase } from "../../servicios/translations.js";
+import { EN, ES } from "../../traducciones/languages.js";
+import { getSavedLanguage, getTranslations, getPhrase } from "../../servicios/translations.js";
 import keys from "../../traducciones/keys.js";
 
 export class MainMenu extends Scene {

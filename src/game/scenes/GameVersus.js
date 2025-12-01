@@ -6,7 +6,7 @@ import { Caja, Tomate, Banana, PickupGomera } from "../clases/obstaculos.js";
 import { crearFondoTriple } from "../utils/crearFondoTriple.js";
 import AudioManager from "../systems/AudioManager.js";
 
-import HUDVersus from "../ui/HUDVersus.js";   // 👈 NUEVO!
+import HUDVersus from "../ui/HUDVersus.js";  
 
 export class Versus extends Scene {
   constructor() {

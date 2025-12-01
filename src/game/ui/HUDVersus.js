@@ -20,7 +20,7 @@ export default class HUDVersus {
   }
 
   // =====================================================
-  // 🚚 BARRA VIDA CAMIÓN
+  // BARRA VIDA CAMIÓN
   // =====================================================
   crearBarraVidaCamion(maxVidas) {
     const scene = this.scene;
@@ -51,7 +51,7 @@ export default class HUDVersus {
   }
 
   // =====================================================
-  // ❤️ CORAZONES BICI (4 imágenes separadas)
+  // CORAZONES BICI (4 imágenes separadas)
   // =====================================================
   crearCorazonesBici() {
     const scene = this.scene;
@@ -76,7 +76,7 @@ export default class HUDVersus {
   }
 
   // =====================================================
-  // 👥 HUD DE LOS DOS JUGADORES
+  // HUD DE LOS DOS JUGADORES
   // =====================================================
   crearHUDPlayers() {
     const scene = this.scene;

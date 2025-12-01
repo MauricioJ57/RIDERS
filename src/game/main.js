@@ -5,15 +5,15 @@ import { GameOver } from './scenes/GameOver';
 import { MainMenu } from './scenes/MainMenu';
 import { Preloader } from './scenes/Preloader';
 import { AUTO, Game } from 'phaser';
+import FirebasePlugin from '../plugins/FirebasePlugin';
+import Login from './scenes/Login';
 
-//  Find out more information about the Game Config at:
-//  https://docs.phaser.io/api-documentation/typedef/types-core#gameconfig
 const config = {
     type: AUTO,
     width: 1920,
     height: 1080,
     parent: 'game-container',
-    backgroundColor: '#028af8',
+    backgroundColor: '#000000ff',
     input: {
         gamepad: true
     },
@@ -24,6 +24,7 @@ const config = {
     scene: [
         Boot,
         Preloader,
+        Login,
         MainMenu,
         MainGame,
         Versus,
@@ -39,7 +40,17 @@ const config = {
     render: { 
         pixelArt: true, 
         antialias: false
-    }
+    },
+    plugins: {
+    global: [
+      {
+        key: "FirebasePlugin",
+        plugin: FirebasePlugin,
+        start: true,
+        mapping: "firebase",
+      },
+    ],
+  },
 };
 
 const StartGame = (parent) => {

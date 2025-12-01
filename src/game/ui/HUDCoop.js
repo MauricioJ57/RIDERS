@@ -13,7 +13,7 @@ export default class HUDCoop {
 
     this.crearPuntuacion();
     this.crearBarraVidaCamion(vidasCamionMax);
-    this.crearCorazonesBici();   // 👈 SOLO UNA VEZ
+    this.crearCorazonesBici();   // SOLO UNA VEZ
     this.crearHUDJugadores();
   }
 

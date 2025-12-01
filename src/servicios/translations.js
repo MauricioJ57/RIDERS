@@ -1,10 +1,12 @@
 import { DE, EN, ES, PT } from "../traducciones/languages";
 
+//funcion para setear el idioma
 export function setLanguage(lang) {
   localStorage.setItem("language", lang);
   language = lang;
 }
 
+//funcion para obtener el idioma guardado
 export function getSavedLanguage() {
   return localStorage.getItem("language") || ES;
 }
@@ -13,6 +15,7 @@ const PROJECT_ID = "3490b08b-fc92-44e2-b460-b6858508ed10";
 let translations = null;
 let language = ES;
 
+//funcion para obtener las traducciones desde la API de Traducila
 export async function getTranslations(lang, callback) {
   setLanguage(lang);
   localStorage.removeItem("translations");
@@ -30,6 +33,7 @@ export async function getTranslations(lang, callback) {
     return;
   }
 
+  // funcion que extrae las traducciones desde la API de Traducila
   return await fetch(
     `https://traducila.vercel.app/api/translations/${PROJECT_ID}/${language}`
   )
@@ -41,6 +45,7 @@ export async function getTranslations(lang, callback) {
     });
 }
 
+//funcion para obtener una frase traducida por su key
 export function getPhrase(key) {
   if (!translations) {
     const locals = localStorage.getItem("translations");
@@ -59,6 +64,7 @@ export function getPhrase(key) {
   return phrase;
 }
 
+// funcion para verificar el idioma disponibke
 function isAllowedLanguage(language) {
   const allowedLanguages = [ES, EN, PT, DE];
   return allowedLanguages.includes(language);
@@ -69,17 +75,6 @@ export function getLanguageConfig() {
 
   // Obtener desde la URL el idioma
   console.log(window.location.href);
-
-  /* 
-      depende como lo manejemos: 
-      1) puede venir como www.dominio.com/es
-      2) puede venir como www.dominio.com?lang=es
-
-      En el primer caso se obtiene con: window.location.pathname
-      En el segundo caso se obtiene leyendo el query param lang 
-      
-      vamos a implementar una logica que cubra ambos casos
-    */
 
   const path =
     window.location.pathname !== "/" ? window.location.pathname : null;
