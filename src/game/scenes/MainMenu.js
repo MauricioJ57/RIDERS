@@ -14,7 +14,7 @@ export class MainMenu extends Scene {
     super("MainMenu");
   }
 
-  init({ language = ES }) {
+  init({ language = ES }) { // recibir el idioma seleccionado
     this.language = language;
   }
 
@@ -44,19 +44,19 @@ export class MainMenu extends Scene {
     this.menu = new MenuButtons(this);
 
     this.menu.crearBoton(
-  960, 
-  550, 
-  getPhrase(keys.sceneInitialMenu.cooperative), 
-  "Game", 
-  "cooperativo"
-);
+      960, 
+      550, 
+      getPhrase(keys.sceneInitialMenu.cooperative), 
+      "Game", 
+      "cooperativo"
+    );
     this.menu.crearBoton(
-  960, 
-  700, 
-  getPhrase(keys.sceneInitialMenu.versus), 
-  "Versus", 
-  "versus"
-);
+      960, 
+      700, 
+      getPhrase(keys.sceneInitialMenu.versus), 
+      "Versus", 
+      "versus"
+    );
 
     this.menu.seleccionar(0, true);
 
@@ -64,31 +64,31 @@ export class MainMenu extends Scene {
     this.tutorialOpen = false;
 
     // --- BOTÓN CAMBIAR IDIOMA ---
-this.idiomaActual = getSavedLanguage(); // obtenés el idioma actual
+    this.idiomaActual = getSavedLanguage(); // obtenés el idioma actual
 
-this.botonIdiomaIngles = this.add.text(
-  this.scale.width - 50, 
-  40, 
-  this.idiomaActual === ES ? "EN" : "ES",
-  {
-    fontFamily: "Arial Black",
-    fontSize: 64,
-    color: "#ffffff"
+    this.botonIdiomaIngles = this.add.text(
+      this.scale.width - 50, 
+      40, 
+      this.idiomaActual === ES ? "EN" : "ES",
+    {
+      fontFamily: "Arial Black",
+      fontSize: 64,
+      color: "#ffffff"
+    }
+    )
+    .setOrigin(1, 0)
+    .setInteractive()
+    .setDepth(20);
+
+    this.botonIdiomaIngles.on("pointerdown", () => {
+      const nuevoIdioma = this.idiomaActual === ES ? EN : ES;
+      getTranslations(nuevoIdioma, () => {
+        this.scene.restart(); // recargar escena con idioma nuevo
+      });
+    });
   }
-)
-.setOrigin(1, 0)
-.setInteractive()
-.setDepth(20);
 
-this.botonIdiomaIngles.on("pointerdown", () => {
-  const nuevoIdioma = this.idiomaActual === ES ? EN : ES;
-  getTranslations(nuevoIdioma, () => {
-    this.scene.restart(); // recargar escena con idioma nuevo
-  });
-});
-  }
-
-  abrirTutorial(tipo) {
+  abrirTutorial(tipo) { // hace aparecer el tutorial segun el modo seleccionado (coop o versus)
     if (this.tutorialOpen) return;
 
     const { width, height } = this.scale;
@@ -105,11 +105,12 @@ this.botonIdiomaIngles.on("pointerdown", () => {
     this.tutorialContainer = this.add.container(0, 0).setDepth(11);
 
     this.add.text(width / 2, 120, getPhrase(keys.sceneInitialMenu.howToPlay), {
-  fontFamily: "Arial Black",
-  fontSize: 56,
-  color: "#ffffff"
-}).setOrigin(0.5)
-  .setDepth(11);
+      fontFamily: "Arial Black",
+      fontSize: 56,
+      color: "#ffffff"
+    })
+    .setOrigin(0.5)
+    .setDepth(11);
 
     if (tipo === "cooperativo") {
       crearTutorialCoop(this, width, height, this.tutorialContainer);
@@ -118,7 +119,7 @@ this.botonIdiomaIngles.on("pointerdown", () => {
     }
   }
 
-  cerrarTutorialYComenzar() {
+  cerrarTutorialYComenzar() { // funcion para empezar la escena seleccionada y cerrar el tutorial
     if (!this.tutorialOpen) return;
 
     this.tutorialContainer.destroy(true);
@@ -133,7 +134,7 @@ this.botonIdiomaIngles.on("pointerdown", () => {
   }
 
   update() {
-    this.fondo.update();
+    this.fondo.update(); // actualizar el fondo en movimiento
 
     const input = this.inputSystem;
     if (!input) return;

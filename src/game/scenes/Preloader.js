@@ -39,15 +39,13 @@ export class Preloader extends Scene
         this.load.setPath('assets');
         this.load.image('logo', 'logo.png');
         this.load.spritesheet('bici', 'bici.png', {
-  frameWidth: 64, // ancho de cada frame
-  frameHeight: 128 // alto de cada frame
-});
-
-            this.load.spritesheet('gomera', 'gomera.png', {
-  frameWidth: 64, // ancho de cada frame
-  frameHeight: 64 // alto de cada frame
-});
-
+          frameWidth: 64, // ancho de cada frame
+          frameHeight: 128 // alto de cada frame
+        });
+        this.load.spritesheet('gomera', 'gomera.png', {
+          frameWidth: 64, // ancho de cada frame
+          frameHeight: 64 // alto de cada frame
+        });
         this.load.image('camion', 'camion.png');
         this.load.image('caja', 'caja.png');
         this.load.image('banana', 'banana.png');
@@ -109,8 +107,6 @@ export class Preloader extends Scene
         this.load.audio('sfx_neneSalto2', 'audio/nene_salto2.wav');
         this.load.audio('sfx_obstaculo1', 'audio/objeto1.wav');
         this.load.audio('sfx_obstaculo2', 'audio/objeto2.wav');
-
-
     }
 
     create ()

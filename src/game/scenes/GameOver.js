@@ -19,10 +19,7 @@ export class GameOver extends Scene {
     const centerX = this.scale.width / 2;
     const centerY = this.scale.height / 2;
 
-    // Fondo negro con fade
-    const fondo = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000)
-      .setOrigin(0)
-      .setAlpha(0);
+    const fondo = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000).setOrigin(0).setAlpha(0);
 
     this.tweens.add({
       targets: fondo,
@@ -31,7 +28,6 @@ export class GameOver extends Scene {
       ease: 'Quad.easeOut'
     });
 
-    // ---------- TEXTO E IMAGEN ----------
     let texto = "";
     let imagenKey = "";
 
@@ -53,7 +49,6 @@ export class GameOver extends Scene {
       }
     }
 
-    // Imagen animada
     if (imagenKey && this.textures.exists(imagenKey)) {
       const imagen = this.add.image(centerX, centerY - 50, imagenKey)
         .setOrigin(0.5)
@@ -69,7 +64,6 @@ export class GameOver extends Scene {
       });
     }
 
-    // Texto principal
     const textoPrincipal = this.add.text(centerX, centerY + 180, texto, {
       fontFamily: 'Arial Black',
       fontSize: '64px',
@@ -86,7 +80,6 @@ export class GameOver extends Scene {
       ease: 'Cubic.Out'
     });
 
-    // ---------- PUNTAJE (solo cooperativo) ----------
     if (this.modo.toLowerCase() === 'cooperativo') {
       const textoPuntaje = this.add.text(
         centerX,
@@ -111,7 +104,6 @@ export class GameOver extends Scene {
       });
     }
 
-    // ---------- INPUT ----------
     this.inputSystem = new InputSystem(this.input);
     this.inputSystem.configureKeyboard({
       [INPUT_ACTIONS.UP]: [Phaser.Input.Keyboard.KeyCodes.UP],
@@ -119,7 +111,6 @@ export class GameOver extends Scene {
       [INPUT_ACTIONS.SOUTH]: [Phaser.Input.Keyboard.KeyCodes.K]
     }, "player1");
 
-    // ---------- BOTONES ----------
     this.botones = [];
     this.botonIndex = 0;
     this.botonesActivos = false;

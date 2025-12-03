@@ -39,7 +39,7 @@ export function crearFondoTriple(scene, config = {}) {
   )
     .setOrigin(0)
     .setScrollFactor(0)
-    .setDepth(profundidadVeredaIzq ?? profundidad) // 👈 profundidad individual o global
+    .setDepth(profundidadVeredaIzq ?? profundidad) // profundidad individual o global
     .setScale(escalaVeredaIzq);
 
   // === Calle ===
