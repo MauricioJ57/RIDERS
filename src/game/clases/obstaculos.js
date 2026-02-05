@@ -17,7 +17,7 @@ reset(x, y) {
   const velocidadExtra = (this.scene.scene.key === 'Versus') ? 200 : 0;
   this.body.setVelocityY(velocidadBase + velocidadExtra);
 }
-
+// hola q onda
   deactivate() {
     this.disableBody(true, true);
   }
